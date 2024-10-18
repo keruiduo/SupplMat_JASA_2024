@@ -15,20 +15,20 @@ The files contain the following information:
    - Recoding of the phonetic form with ASJP classes (SoundClasses)
    - Segment count (SegmentCount)
 
-3. dataset(final).ASJP.lexicon.csv --> Data on lexical forms (non-interjections) extracted from ASJP in the languages where interjections were collected. Columns from left to right:
+2. dataset(final).ASJP.lexicon.csv --> Data on lexical forms (non-interjections) extracted from ASJP in the languages where interjections were collected. Columns from left to right:
    - Phonetic form (FORM)
    - Glottocode of the language (GLOTTOCODE)
    - Recoding of the phonetic form with ASJP classes (SoundClasses)
    - Segment count (SegmentCount)
    - The type of lexical input - always LEXICON, in contrast with PAIN, DISGUST or ANGER for interjections (EMOTION)
 
-5. dataset(final).Lexibank.intj.csv --> File strictly identical to 'dataset(final).ASJP.intj.csv' (duplicated to have two similar pairs of files, one for ASJP and one for Lexibank
+3. dataset(final).Lexibank.intj.csv --> File strictly identical to 'dataset(final).ASJP.intj.csv' (duplicated to have two similar pairs of files, one for ASJP and one for Lexibank
 
-6. dataset(final).Lexibank.lexicon.csv --> Data on lexical forms (non-interjections) extracted from Lexibank in the languages where interjections were collected. Same columns as for  'dataset(final).ASJP.lexicon.csv'
+4. dataset(final).Lexibank.lexicon.csv --> Data on lexical forms (non-interjections) extracted from Lexibank in the languages where interjections were collected. Same columns as for  'dataset(final).ASJP.lexicon.csv'
 
-7. Data sources for interjections.ods --> Sources for the collection of the interjections
+5. Data sources for interjections.ods --> Sources for the collection of the interjections
 
-8. Vocalizations.ods --> Experimental data on vocalizations, with in the columns from left to right for each observation:
+6. Vocalizations.ods --> Experimental data on vocalizations, with in the columns from left to right for each observation:
    - Name of the file containing the audio recording (file)
    - Speaker's primary language (CN for Chinese; EN for English; ES for Spanish; JP for Japanese; TUR for Turkish) (Language)
    - Speaker's ID (Idvocaliser)
@@ -61,5 +61,9 @@ The files contain the following information:
    - Emotion (Disgust, Pain or Joy) (em)
    - Speaker's primary language (lang)
    - Speaker's gender (M for Man; F for Woman; NB for Non-binary) (Sex)
+(also given in the second sheet of the .ods file)
 
+These files can be used as input for the various pieces of code provided in Supplementary Materials.
+
+Reference
 Goddard, C. (2014). Interjections and emotion (with special reference to “surprise” and “disgust”). Emotion review, 6(1), 53-63.
