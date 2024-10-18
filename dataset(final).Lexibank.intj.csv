@@ -1,0 +1,649 @@
+REGION,LANGUAGE,GLOTTOCODE,EMOTION,FORM,INITIAL_FORM,SoundClasses,SegmentCount
+Africa,Afar,afar1241,DISGUST,ħés,ħés,Xes,3
+Africa,Joola kwaatay,band1340,DISGUST,hiiɲə,hiiɲə,hii53,5
+Africa,Basa,basa1282,DISGUST,wúù,wúù,wuu,3
+Africa,Kanuri,cent2050,DISGUST,jâjóò,jâjóò,yayoo,5
+Africa,Dioula (Kong),dyul1238,DISGUST,píì,píì,pii,3
+Africa,éton,eton1253,DISGUST,àkà,àkà,aka,3
+Africa,éton,eton1253,DISGUST,sɔ̀ŋ,sɔ̀ŋ,soN,3
+Africa,Gambian Wolof,gamb1252,DISGUST,cim,cim,Tim,3
+Africa,Gambian Wolof,gamb1252,DISGUST,cɛm,cɛm,TEm,3
+Africa,Gambian Wolof,gamb1252,DISGUST,cam,cam,Tam,3
+Africa,Perge Tegu,jams1239,DISGUST,kárì,kárì,kari,4
+Africa,Peul (Massina),maas1239,DISGUST,duʃ,duʃ,duS,3
+Africa,Peul (Massina),maas1239,DISGUST,puh,puh,puh,3
+Africa,Peul (Massina),maas1239,DISGUST,tu,tu,tu,2
+Africa,Maʼdi,madi1260,DISGUST,ʔà,ʔà,7a,2
+Africa,Mende,mend1266,DISGUST,àɟɔ̀,àɟɔ̀,aTo,3
+Africa,Mende,mend1266,DISGUST,àpɔ́lɛ́,àpɔ́lɛ́,apolE,5
+Africa,Dagaare,nort2780,DISGUST,àkàí,àkàí,akai,4
+Africa,Wolof,nucl1347,DISGUST,cam,cam,Tam,3
+Africa,Wolof,nucl1347,DISGUST,cim,cim,Tim,3
+Africa,Wolof,nucl1347,DISGUST,uf,uf,uf,2
+Africa,Orma Oromo,orma1241,DISGUST,buʃaj,buʃaj,buSay,5
+Africa,Orma Oromo,orma1241,DISGUST,ʃaa,ʃaa,Saa,3
+Africa,Orma Oromo,orma1241,DISGUST,ʃaj,ʃaj,Say,3
+Africa,Chamba,samb1311,DISGUST,káàj,káàj,kaay,4
+Africa,Sereer,sere1260,DISGUST,ca,ca,Ta,2
+Africa,Sereer,sere1260,DISGUST,tuuk,tuuk,tuuk,4
+Africa,Grebo,sout2826,DISGUST,sȁsȁ,sȁsȁ,sasa,4
+Africa,Tẹ̀ẹ̀,teee1242,DISGUST,hm̀,hm̀,hm,2
+Africa,Yorno-So,toro1252,DISGUST,kárí,kárí,kari,4
+Africa,Yoruba,yoru1245,DISGUST,ʃíɔ̀,ʃíɔ̀,Sio,3
+Africa,Afar,afar1241,JOY,únkaʕ,únkaʕ,unkaX,5
+Africa,Balante de Jabada,bala1301,JOY,pam,pam,pam,3
+Africa,Bambara,bamb1269,JOY,dḛ́dḛ́dḛ́,dḛ́dḛ́dḛ́,dedede,6
+Africa,Bambara,bamb1269,JOY,fárífárí,fárífárí,farifari,8
+Africa,Bambara,bamb1269,JOY,kḭ́kà̰kḭ́,kḭ́kà̰kḭ́,kikaki,6
+Africa,Bambara,bamb1269,JOY,lájílá,lájílá,layila,6
+Africa,Bambara,bamb1269,JOY,sígéjí,sígéjí,sigeyi,6
+Africa,Bambara,bamb1269,JOY,tàáré,tàáré,taare,5
+Africa,Bambara,bamb1269,JOY,tàrétàré,tàrétàré,taretare,8
+Africa,Bambara,bamb1269,JOY,wátáráwá,wátáráwá,watarawa,8
+Africa,Basa,basa1282,JOY,tàpíʃànáá,tàpíʃànáá,tapiSanaa,9
+Africa,Bokobaru,boko1267,JOY,ajuwi,ajuwi,ayuwi,5
+Africa,Boore,buam1238,JOY,fóō fìràā,fóō fìràā,foofiraa,8
+Africa,Boore,buam1238,JOY,ʔújúū,ʔújúū,7uyuu,5
+Africa,C’lela,clel1238,JOY,sʷé,sʷé,se,2
+Africa,Dan (gwèèta),dann1241,JOY,gi̋ɗa̰̋,gi̋ɗa̰̋,gida,4
+Africa,Dan (gwèèta),dann1241,JOY,jɛ̋ɛ̋ɗɤ̄,jɛ̋ɛ̋ɗɤ̄,yEEdo,5
+Africa,Rumanyo,diri1252,JOY,á’a,á’a,aa,2
+Africa,Rumanyo,diri1252,JOY,wéewe,wéewe,weewe,5
+Africa,Gevia,eviy1235,JOY,joo,joo,yoo,3
+Africa,Gevia,eviy1235,JOY,jovee-jovee,jovee-jovee,yoveeyovee,10
+Africa,Gevia,eviy1235,JOY,olo,olo,olo,3
+Africa,Ewe,ewee1241,JOY,áà,áà,aa,2
+Africa,Ewe,ewee1241,JOY,àhá̰á̰,àhá̰á̰,ahaa,4
+Africa,Ewe,ewee1241,JOY,àwó lòò,àwó lòò,awoloo,6
+Africa,Gbaya mbódɔ̀mɔ̀,gbay1281,JOY,lí,lí,li,2
+Africa,Gbaya (Yaayuwee),gbay1283,JOY,ɲɛ̀mɛ̀ɛ̀,ɲɛ̀mɛ̀ɛ̀,5EmEE,5
+Africa,Gbaya (Yaayuwee),gbay1283,JOY,òé,òé,oe,2
+Africa,Gedeo,gede1246,JOY,haʃːuː,haʃːuː,haSu,4
+Africa,Modo,jurm1239,JOY,kòkò,kòkò,koko,4
+Africa,Peul (Massina),maas1239,JOY,hugga,hugga,hugga,5
+Africa,Peul (Massina),maas1239,JOY,kuluɟa,kuluɟa,kuluTa,6
+Africa,Peul (Massina),maas1239,JOY,saandara,saandara,saandara,8
+Africa,Maʼdi,madi1260,JOY,òwélélé,òwélélé,owelele,7
+Africa,Mamara,mama1271,JOY,paji,paji,payi,4
+Africa,Manjaku,mand1419,JOY,naɟɔ,naɟɔ,naTo,4
+Africa,Manjaku (Churo),mand1419,JOY,ɟo,ɟo,To,2
+Africa,Manjaku (Costa de Baixo),mand1419,JOY,ɟuʌt,ɟuʌt,Tuot,4
+Africa,Brame,mank1251,JOY,napantə,napantə,napant3,7
+Africa,Mende,mend1266,JOY,gbɛ̀kɛ̀ wùɟú,gbɛ̀kɛ̀ wùɟú,gbEkEwuTu,9
+Africa,Mende,mend1266,JOY,hòjó,hòjó,hoyo,4
+Africa,Mende,mend1266,JOY,kídḭ̌,kídḭ̌,kidi,4
+Africa,Mende,mend1266,JOY,kìnɟá̰ṵ́,kìnɟá̰ṵ́,kinTau,6
+Africa,Mwan,mwan1250,JOY,cɔ́,cɔ́,To,2
+Africa,Engwo,ngwo1241,JOY,ēgɛ́nɛ́ kèmjɛ̀,ēgɛ́nɛ́ kèmjɛ̀,egEnEkemyE,10
+Africa,Wolof,nucl1347,JOY,ɛj,ɛj,Ey,2
+Africa,Wolof,nucl1347,JOY,waaw-goor,waaw-goor,waawgoor,8
+Africa,Wolof,nucl1347,JOY,waaw-kaɲ,waaw-kaɲ,waawka5,7
+Africa,Wolof,nucl1347,JOY,waaw-kumba,waaw-kumba,waawkumba,9
+Africa,Pepel,pape1239,JOY,ajʊ,ajʊ,ayu,3
+Africa,Pular,pula1262,JOY,iskin,iskin,iskin,5
+Africa,Sereer,sere1260,JOY,ioo,ioo,ioo,3
+Africa,Sereer,sere1260,JOY,ngaɟaari,ngaɟaari,ngaTaari,8
+Africa,Sereer,sere1260,JOY,suuʔʲin n,suuƴin n,suu7inn,7
+Africa,Sereer,sere1260,JOY,suuʔʲin k,suuƴin k,suu7ink,7
+Africa,Sereer,sere1260,JOY,waa-aa-aa-aa,waa-aa-aa-aa,waaaaaaaa,9
+Africa,Sereer,sere1260,JOY,wala,wala,wala,4
+Africa,Sereer (Saalum),sere1260,JOY,ndejsaan,ndejsaan,ndeysaan,8
+Africa,Sereer (Saalum),sere1260,JOY,ʔejwaaj,ʔejwaaj,7eywaay,7
+Africa,Grebo,sout2826,JOY,kűȅ̤,kűȅ̤,kue,3
+Africa,Shisumbwa,sumb1240,JOY,aho,aho,aho,3
+Africa,Ibɔɔ̃,teke1278,JOY,ùpwáàlà,ùpwáàlà,upwaala,7
+Africa,Bozo (Tieyaxo),tiey1235,JOY,paj,paj,pay,3
+Africa,Bozo (Tieyaxo),tiey1235,JOY,pajpaj,pajpaj,paypay,6
+Africa,Timne,timn1235,JOY,m-amo,m-amo,mamo,4
+Africa,Vai,vaii1241,JOY,fìjàlé,fìjàlé,fiyale,6
+Africa,Vai,vaii1241,JOY,fìjàlé-fìjàlé,fìjàlé-fìjàlé,fiyalefiyale,12
+Africa,Vai,vaii1241,JOY,háwòwò,háwòwò,hawowo,6
+Africa,Vai,vaii1241,JOY,hójòwò,hójòwò,hoyowo,6
+Africa,Vai,vaii1241,JOY,hoɲɟowo,hoɲɟowo,ho5Towo,7
+Africa,Vai,vaii1241,JOY,síjésíjé,síjésíjé,siyesiye,8
+Africa,Limba,west2450,JOY,ijɔɔ ijɔɔ,ijɔɔ ijɔɔ,iyooiyoo,8
+Africa,Limba,west2450,JOY,n-ni-wali n-ni-wali,n-ni-wali n-ni-wali,nniwalinniwali,14
+Africa,Limba,west2450,JOY,ntoro,ntoro,ntoro,5
+Africa,Khassonké,xaas1235,JOY,táárè,táárè,taare,5
+Africa,Badiaranke,bady1239,PAIN,wooji,wooji,wooyi,5
+Africa,Bakweri,bafa1247,PAIN,áɟè,áɟè,aTe,3
+Africa,Bambara,bamb1269,PAIN,sjá,sjá,sya,3
+Africa,Bambara,bamb1269,PAIN,súú,súú,suu,3
+Africa,Bambara,bamb1269,PAIN,wáájí,wáájí,waayi,5
+Africa,Bambara,bamb1269,PAIN,wí,wí,wi,2
+Africa,Gusiilaay,band1340,PAIN,aah,aah,aah,3
+Africa,Gusiilaay,band1340,PAIN,aj,aj,ay,2
+Africa,Gusiilaay,band1340,PAIN,uuh,uuh,uuh,3
+Africa,Gusiilaay,band1340,PAIN,wuj,wuj,wuy,3
+Africa,Basari,bass1258,PAIN,ají,ají,ayi,3
+Africa,Basari,bass1258,PAIN,jój,jój,yoy,3
+Africa,Basari,bass1258,PAIN,wój-wój-wój,wój-wój-wój,woywoywoy,9
+Africa,Bedik,bedi1235,PAIN,wàj nɔ́,wàj nɔ́,wayno,5
+Africa,Kanuri,cent2050,PAIN,wájjájóòʔ,wájjájóòʔ,wayyayoo7,9
+Africa,Dii,diii1241,PAIN,’wé,’wé,we,2
+Africa,Dii,diii1241,PAIN,’wéē,’wéē,wee,3
+Africa,Dii,diii1241,PAIN,jōò,jōò,yoo,3
+Africa,Dii,diii1241,PAIN,m̀m̀,m̀m̀,mm,2
+Africa,Dii,diii1241,PAIN,ùsùù,ùsùù,usuu,4
+Africa,Dii,diii1241,PAIN,wáj́,wáj́,way,3
+Africa,Dii,diii1241,PAIN,wɔ́j́,wɔ́j́,woy,3
+Africa,Dii,diii1241,PAIN,wēéē,wēéē,weee,4
+Africa,Gevia,eviy1235,PAIN,ai,ai,ai,2
+Africa,Gevia,eviy1235,PAIN,i,i,i,1
+Africa,Ewe,ewee1241,PAIN,áà,áà,aa,2
+Africa,Ewe,ewee1241,PAIN,ád͡zájì,ádzájì,acayi,5
+Africa,Ewe,ewee1241,PAIN,ád͡zíjì,ádzíjì,aciyi,5
+Africa,Ewe,ewee1241,PAIN,àhí,àhí,ahi,3
+Africa,Ewe,ewee1241,PAIN,ájì,ájì,ayi,3
+Africa,Ewe,ewee1241,PAIN,áwò!,áwò!,awo,3
+Africa,Ewe,ewee1241,PAIN,jíì,jíì,yii,3
+Africa,Gbaya (Yaayuwee),gbay1283,PAIN,ʔṵ̀ṵ́,ʔṵ̀ṵ́,7uu,3
+Africa,Ịḅanị,iban1261,PAIN,ákáɩ̀,ákáɩ̀,akai,4
+Africa,Ịḅanị,iban1261,PAIN,jéì,jéì,yei,3
+Africa,Joola kasa,jola1263,PAIN,ajooh,ajooh,ayooh,5
+Africa,Ju|’hoan,juho1239,PAIN,ǀ̰̏à̰,ǀʼȁ̰à̰,!a,2
+Africa,Ju|’hoan,juho1239,PAIN,ʃù,ʃù,Su,2
+Africa,Modo,jurm1239,PAIN,ɛ̀ʔɛ́,ɛ̀ʔɛ́,E7E,3
+Africa,Modo,jurm1239,PAIN,mʔm,mʔm,m7m,3
+Africa,Kakabe,kaka1265,PAIN,wàjɔ̋ɔ̋j,wàjɔ̋ɔ̋j,wayooy,6
+Africa,Kóonzime,koon1245,PAIN,ájèèè,ájèèè,ayeee,5
+Africa,Lendu (thadha),lend1245,PAIN,ʔàʔā,ˀàˀā,7a7a,4
+Africa,Lendu (thadha),lend1245,PAIN,hǎì,hǎì,hai,3
+Africa,Logba,logb1245,PAIN,d͡zálélé,dzálélé,calele,6
+Africa,Majang,maja1242,PAIN,wèé,wèé,wee,3
+Africa,Sénoufo du Minyanka,mama1271,PAIN,e,e,e,1
+Africa,Mundu,mund1326,PAIN,árápɛ̄,árápɛ̄,arapE,5
+Africa,Mundu,mund1326,PAIN,ōōō,ōōō,ooo,3
+Africa,Mundu,mund1326,PAIN,wónā,wónā,wona,4
+Africa,Mundu,mund1326,PAIN,wóōnā,wóōnā,woona,5
+Africa,Mwan,mwan1250,PAIN,āh,āh,ah,2
+Africa,Dagaare,nort2780,PAIN,ááɪ́,ááɪ́,aai,3
+Africa,Wolof,nucl1347,PAIN,ax,ax,ax,2
+Africa,Wolof,nucl1347,PAIN,uj,uj,uy,2
+Africa,Wolof,nucl1347,PAIN,wəj,wəj,w3y,3
+Africa,Pular,pula1262,PAIN,woj,woj,woy,3
+Africa,Pular,pula1262,PAIN,wojjooj,wojjooj,woyyooy,7
+Africa,Za:r,saya1246,PAIN,óōj,óōj,ooy,3
+Africa,Za:r,saya1246,PAIN,wájjo᷇,wájjo᷇,wayyo,5
+Africa,Sereer,sere1260,PAIN,ej,ej,ey,2
+Africa,Sereer,sere1260,PAIN,oj,oj,oy,2
+Africa,Sereer,sere1260,PAIN,uj,uj,uy,2
+Africa,Sereer,sere1260,PAIN,woj,woj,woy,3
+Africa,Sereer,sere1260,PAIN,wuj,wuj,wuy,3
+Africa,Sereer (Saalum),sere1260,PAIN,ʔis,ʔis,7is,3
+Africa,Sérère,sere1260,PAIN,wuj,wuj,wuy,3
+Africa,Nembe,sout2774,PAIN,ájèè,ájèè,ayee,4
+Africa,Nembe,sout2774,PAIN,ákáà,ákáà,akaa,4
+Africa,Nembe,sout2774,PAIN,háàhúù,háàhúù,haahuu,6
+Africa,Lubwisi,tali1258,PAIN,ai,ai,ai,2
+Africa,Ateso,teso1249,PAIN,o-kwe,o-kwe,okwe,4
+Africa,Sissala,tumu1242,PAIN,àà,àà,aa,2
+Africa,Zande,zand1248,PAIN,ɲéè,ɲéè,5ee,3
+Asia,Chavacano,chav1241,DISGUST,ʧipˈleh,ʧipˈleh,Cipleh,6
+Asia,Chavacano,chav1241,DISGUST,walasˈtik,walasˈtik,walastik,8
+Asia,Mongolian,halh1238,DISGUST,pʰeː,pʰeː,pe,2
+Asia,Mongolian,halh1238,DISGUST,tʰatʰai,tʰatʰai,tatai,5
+Asia,Mongolian,halh1238,DISGUST,uːtʰ,uːtʰ,ut,2
+Asia,Hiligaynon aka Ilonggo,hili1240,DISGUST,a-a,a-a,aa,2
+Asia,Hiligaynon aka Ilonggo,hili1240,DISGUST,abɔ,abɔ,abo,3
+Asia,Hiligaynon aka Ilonggo,hili1240,DISGUST,aʃʲig,aʃʲig,aSig,4
+Asia,Hiligaynon aka Ilonggo,hili1240,DISGUST,hi,hi,hi,2
+Asia,Hiligaynon aka Ilonggo,hili1240,DISGUST,hɪa,hɪa,hia,3
+Asia,Hiligaynon aka Ilonggo,hili1240,DISGUST,jati,jati,yati,4
+Asia,Hiligaynon aka Ilonggo,hili1240,DISGUST,jatis,jatis,yatis,5
+Asia,Hiligaynon aka Ilonggo,hili1240,DISGUST,ʊj,ʊj,uy,2
+Asia,Ilocano,ilok1237,DISGUST,ai ʃai,ai ʃai,aiSai,5
+Asia,Standard Indonesian,indo1316,DISGUST,bah,bah,bah,3
+Asia,Standard Indonesian,indo1316,DISGUST,eh,eh,eh,2
+Asia,Standard Indonesian,indo1316,DISGUST,hem,hem,hem,3
+Asia,Standard Indonesian,indo1316,DISGUST,idih,idih,idih,4
+Asia,Standard Indonesian,indo1316,DISGUST,ih,ih,ih,2
+Asia,Standard Indonesian,indo1316,DISGUST,nad͡ʒis,nad͡ʒis,najis,5
+Asia,Standard Indonesian,indo1316,DISGUST,t͡ʃih,t͡ʃih,Cih,3
+Asia,Standard Indonesian,indo1316,DISGUST,uh,uh,uh,2
+Asia,Javanese,java1254,DISGUST,d̪̥iamput̪,d̪̥iamput̪,diamput,7
+Asia,Javanese,java1254,DISGUST,hək,hək,h3k,3
+Asia,Javanese,java1254,DISGUST,iɖ̥i(-iɖ̥i),iɖ̥i(-iɖ̥i),idiidi,6
+Asia,Korean,kore1280,DISGUST,ej,ej,ey,2
+Asia,Korean,kore1280,DISGUST,won,won,won,3
+Asia,Manchu,manc1252,DISGUST,akhɘ,akhɘ,akh3,4
+Asia,Burmese,nucl1310,DISGUST,hpwi pʰwì,hpwi pʰwì,hpwipwi,7
+Asia,Shan,shan1277,DISGUST,pʰí,pʰí,pi,2
+Asia,Shan,shan1277,DISGUST,ʔàː pʰí,ʔà: pʰí,7api,4
+Asia,Shan,shan1277,DISGUST,ʔɛ̀ pʰí,ʔɛ̀ pʰí,7Epi,4
+Asia,Teop,teop1238,DISGUST,ree,ree,ree,3
+Asia,Thai,thai1261,DISGUST,ʔíː,ʔíː,7i,2
+Asia,Thai,thai1261,DISGUST,ʔǐː,ʔǐː,7i,2
+Asia,Vietnamese,viet1252,DISGUST,eo33 oj33,eo33 oj33,eooy,4
+Asia,Vietnamese,viet1252,DISGUST,ɛ32,ɛ32,E,1
+Asia,Vietnamese,viet1252,DISGUST,hɯ24,hɯ24,hu,2
+Asia,Central Khmer,cent1989,JOY,cɔɔ yɔɔ sap,cɔɔ yɔɔ sap,Tooioosap,9
+Asia,Central Khmer,cent1989,JOY,ceaʔyeaʔkʰooh,ceaʔyeaʔkʰooh,Tea7iea7kooh,12
+Asia,Central Khmer,cent1989,JOY,ceaʔyeaʔtoʔ,ceaʔyeaʔtoʔ,Tea7iea7to7,11
+Asia,Central Khmer,cent1989,JOY,ceaʔyoo,ceaʔyoo,Tea7ioo,7
+Asia,Central Khmer,cent1989,JOY,ceyyoo,ceyyoo,Teiioo,6
+Asia,Central Khmer,cent1989,JOY,ceaʔyou,ceaʔyou,Tea7iou,7
+Asia,Central Khmer,cent1989,JOY,ciʔtaŋ,ciʔtaŋ,Ti7taN,6
+Asia,Central Khmer,cent1989,JOY,yii ʔaə,yii ʔaə,iii7a3,6
+Asia,Central Khmer,cent1989,JOY,yoo,yoo,ioo,3
+Asia,Central Khmer,cent1989,JOY,ʔaah,ʔaah,7aah,4
+Asia,Central Khmer,cent1989,JOY,ʔaasaʔ,ʔaasaʔ,7aasa7,6
+Asia,Central Khmer,cent1989,JOY,ʔaal,ʔaal,7aal,4
+Asia,Central Khmer,cent1989,JOY,ʔəət,ʔəət,733t,4
+Asia,Central Khmer,cent1989,JOY,ʔəɨt,ʔəɨt,733t,4
+Asia,Central Khmer,cent1989,JOY,ʔoɲ,ʔoɲ,7o5,3
+Asia,Mongolian,halh1238,JOY,ʊːxai,ʊːxai,uxai,4
+Asia,Mongolian,halh1238,JOY,ʊrai,ʊrai,urai,4
+Asia,Hiligaynon aka Ilonggo,hili1240,JOY,aba,aba,aba,3
+Asia,Hiligaynon aka Ilonggo,hili1240,JOY,abaw,abaw,abaw,4
+Asia,Hiligaynon aka Ilonggo,hili1240,JOY,aj,aj,ay,2
+Asia,Hiligaynon aka Ilonggo,hili1240,JOY,aniŋ,aniŋ,aniN,4
+Asia,Hiligaynon aka Ilonggo,hili1240,JOY,aragɔj,aragɔj,aragoy,6
+Asia,Hiligaynon aka Ilonggo,hili1240,JOY,araj,araj,aray,4
+Asia,Hiligaynon aka Ilonggo,hili1240,JOY,araw,araw,araw,4
+Asia,Hiligaynon aka Ilonggo,hili1240,JOY,arawaraw,arawaraw,arawaraw,8
+Asia,Hiligaynon aka Ilonggo,hili1240,JOY,hoj,hoj,hoy,3
+Asia,Hiligaynon aka Ilonggo,hili1240,JOY,ihim,ihim,ihim,4
+Asia,Hiligaynon aka Ilonggo,hili1240,JOY,ihoj,ihoj,ihoy,4
+Asia,Hiligaynon aka Ilonggo,hili1240,JOY,kananaks,kananaks,kananaks,8
+Asia,Hiligaynon aka Ilonggo,hili1240,JOY,oja,oja,oya,3
+Asia,Hiligaynon aka Ilonggo,hili1240,JOY,ʊja,ʊja,uya,3
+Asia,Hiligaynon aka Ilonggo,hili1240,JOY,ʊj-a,ʊj-a,uya,3
+Asia,Hiligaynon aka Ilonggo,hili1240,JOY,wai mɔ,wai mɔ,waimo,5
+Asia,Ilocano,ilok1237,JOY,ajna,ajna,ayna,4
+Asia,Standard Indonesian,indo1316,JOY,ha,ha,ha,2
+Asia,Standard Indonesian,indo1316,JOY,hebriŋ,hebriŋ,hebriN,6
+Asia,Standard Indonesian,indo1316,JOY,hore,hore,hore,4
+Asia,Standard Indonesian,indo1316,JOY,hura,hura,hura,4
+Asia,Standard Indonesian,indo1316,JOY,maʊt,maʊt,maut,4
+Asia,Standard Indonesian,indo1316,JOY,na,na,na,2
+Asia,Standard Indonesian,indo1316,JOY,sabas,sabas,sabas,5
+Asia,Standard Indonesian,indo1316,JOY,ser,ser,ser,3
+Asia,Standard Indonesian,indo1316,JOY,t͡ʃiui,tʃiui,Ciui,4
+Asia,Standard Indonesian,indo1316,JOY,t͡ʃihuj,tʃihuj,Cihuy,5
+Asia,Standard Indonesian,indo1316,JOY,wah,wah,wah,3
+Asia,Standard Indonesian,indo1316,JOY,wujh,wujh,wuyh,4
+Asia,Javanese,java1254,JOY,aɖ̥uh,aɖ̥uh,aduh,4
+Asia,Javanese,java1254,JOY,aʈuh,aʈuh,atuh,4
+Asia,Javanese,java1254,JOY,d͡ʒ̊empol,dʒ̊empol,jempol,6
+Asia,Javanese,java1254,JOY,hore,hore,hore,4
+Asia,Javanese,java1254,JOY,hose,hose,hose,4
+Asia,Javanese,java1254,JOY,hure,hure,hure,4
+Asia,Javanese,java1254,JOY,huse,huse,huse,4
+Asia,Javanese,java1254,JOY,ijo,ijo,iyo,3
+Asia,Javanese,java1254,JOY,je,je,ye,2
+Asia,Javanese,java1254,JOY,ose,ose,ose,3
+Asia,Korean,kore1280,JOY,aa,aa,aa,2
+Asia,Korean,kore1280,JOY,ejla,ejla,eyla,4
+Asia,Korean,kore1280,JOY,ejla manswu,ejla manswu,eylamanswu,10
+Asia,Korean,kore1280,JOY,ejla t͡ɕoh kʰwun a,ejla tɕoh kʰwun a,eylaCohkwuna,12
+Asia,Korean,kore1280,JOY,jaa,jaa,yaa,3
+Asia,Korean,kore1280,JOY,mansej,mansej,mansey,6
+Asia,Korean,kore1280,JOY,t͡ɕotʰa,tɕotʰa,Cota,4
+Asia,Lao,laoo1244,JOY,héː,hé:,he,2
+Asia,Lao,laoo1244,JOY,hēː,hē:,he,2
+Asia,Lao,laoo1244,JOY,héː háː,héː há:,heha,4
+Asia,Lao,laoo1244,JOY,hə́ːy,hə́ːy,h3i,3
+Asia,Lao,laoo1244,JOY,híːu,híːu,hiu,3
+Asia,Lao,laoo1244,JOY,hīw,hīw,hiw,3
+Asia,Lao,laoo1244,JOY,hōː,hōː,ho,2
+Asia,Lao,laoo1244,JOY,hóː hȋːw,hóː hȋːw,hohiw,5
+Asia,Lao,laoo1244,JOY,pȅːp,pȅːp,pep,3
+Asia,Lao,laoo1244,JOY,pɛ̏ːp,pɛ̏ːp,pEp,3
+Asia,Lao,laoo1244,JOY,pȉːp,pȉːp,pip,3
+Asia,Lao,laoo1244,JOY,sǎːtʰūkàːn,sǎːtʰūkàːn,satukan,7
+Asia,Lao,laoo1244,JOY,sáiɲóː,sáiɲó:,sai5o,5
+Asia,Lao,laoo1244,JOY,yôː,yôː,io,2
+Asia,Manchu,manc1252,JOY,abɕi χɔd͡zɔ,abɕi χɔɖʐɔ,abSiXoco,8
+Asia,Burmese,nucl1310,JOY,o,o,o,1
+Asia,Burmese,nucl1310,JOY,tha du,tha du,thadu,5
+Asia,Burmese,nucl1310,JOY,θà dṵ,θà dṵ,8adu,4
+Asia,Shanghai,shan1293,JOY,hɔʰaʰ,hɔʰaʰ,hoa,3
+Asia,Thai,thai1261,JOY,cʰājjōː,cʰājjōː,Tayyo,5
+Asia,Thai,thai1261,JOY,cʰajōː,cʰajōː,Tayo,4
+Asia,Thai,thai1261,JOY,dīː cīŋ,dīː cīŋ,diTiN,5
+Asia,Thai,thai1261,JOY,dīː kràʔrāj,dīː kràʔrāj,dikra7ray,9
+Asia,Thai,thai1261,JOY,hāː,hāː,ha,2
+Asia,Tibetan,tibe1272,JOY,ɐlɐlɐ ,ɐlɐlɐ ,alala,5
+Asia,Tibetan,tibe1272,JOY,t͡ʃat͡ʃɔ,t͡ʃat͡ʃɔ,CaCo,4
+Asia,Vietnamese,viet1252,JOY,cu33,cu33,Tu,2
+Asia,Vietnamese,viet1252,JOY,ha33,ha33,ha,2
+Asia,Vietnamese,viet1252,JOY,hăj33,hăj33,hay,3
+Asia,Vietnamese,viet1252,JOY,hwan33 ho33,hwan33 ho33,hwanho,6
+Asia,Vietnamese,viet1252,JOY,zo33 ta33,zo33 ta33,zota,4
+Asia,Yao,yang1310,JOY,i˩˥,i˩˥,i,1
+Asia,Central Khmer,cent1989,PAIN,hɨh,hɨh,h3h,3
+Asia,Central Khmer,cent1989,PAIN,hɨɨ,hɨɨ,h33,3
+Asia,Central Khmer,cent1989,PAIN,tukkʰaŋ,tukkʰaŋ,tukkaN,6
+Asia,Central Khmer,cent1989,PAIN,yah,yah,iah,3
+Asia,Central Khmer,cent1989,PAIN,yuy,yuy,iui,3
+Asia,Central Khmer,cent1989,PAIN,yuuy,yuuy,iuui,4
+Asia,Central Khmer,cent1989,PAIN,yooy,yooy,iooi,4
+Asia,Central Khmer,cent1989,PAIN,ʔəy yooy,ʔəy yooy,73iiooi,7
+Asia,Central Khmer,cent1989,PAIN,ʔooy,ʔooy,7ooi,4
+Asia,Central Khmer,cent1989,PAIN,ʔiih,ʔiih,7iih,4
+Asia,Central Khmer,cent1989,PAIN,ʔɨh,ʔɨh,73h,3
+Asia,Central Khmer,cent1989,PAIN,ʔoh,ʔoh,7oh,3
+Asia,Chavacano,chav1241,PAIN,qagay,qagay,qagai,5
+Asia,Chavacano,chav1241,PAIN,qaray,qaray,qarai,5
+Asia,Dzongkha,dzon1239,PAIN,ʔala,ʔala,7ala,4
+Asia,Dzongkha,dzon1239,PAIN,ʔat͡sa,ʔatsa,7aca,4
+Asia,Hiligaynon aka Ilonggo,hili1240,PAIN,aba,aba,aba,3
+Asia,Hiligaynon aka Ilonggo,hili1240,PAIN,abaw,abaw,abaw,4
+Asia,Hiligaynon aka Ilonggo,hili1240,PAIN,agɔj,agɔj,agoy,4
+Asia,Hiligaynon aka Ilonggo,hili1240,PAIN,aj,aj,ay,2
+Asia,Hiligaynon aka Ilonggo,hili1240,PAIN,aŋgɔj,aŋgɔj,aNgoy,5
+Asia,Hiligaynon aka Ilonggo,hili1240,PAIN,aragɔj,aragɔj,aragoy,6
+Asia,Hiligaynon aka Ilonggo,hili1240,PAIN,araj,araj,aray,4
+Asia,Hiligaynon aka Ilonggo,hili1240,PAIN,araw,araw,araw,4
+Asia,Hiligaynon aka Ilonggo,hili1240,PAIN,arɔgɔj,arɔgɔj,arogoy,6
+Asia,Hiligaynon aka Ilonggo,hili1240,PAIN,arɔj,arɔj,aroy,4
+Asia,Hiligaynon aka Ilonggo,hili1240,PAIN,harɔj,harɔj,haroy,5
+Asia,Hiligaynon aka Ilonggo,hili1240,PAIN,arʊj,arʊj,aruy,4
+Asia,Ilocano,ilok1237,PAIN,anaj,anaj,anay,4
+Asia,Ilocano,ilok1237,PAIN,ananj,ananj,anany,5
+Asia,Standard Indonesian,indo1316,PAIN,aaʊ,aaʊ,aau,3
+Asia,Standard Indonesian,indo1316,PAIN,adu,adu,adu,3
+Asia,Standard Indonesian,indo1316,PAIN,ado,ado,ado,3
+Asia,Standard Indonesian,indo1316,PAIN,adi,adi,adi,3
+Asia,Standard Indonesian,indo1316,PAIN,bijuŋbijuŋ,bijuŋbijuŋ,biyuNbiyuN,10
+Asia,Standard Indonesian,indo1316,PAIN,o,o,o,1
+Asia,Standard Indonesian,indo1316,PAIN,wa,wa,wa,2
+Asia,Standard Indonesian,indo1316,PAIN,wua,wua,wua,3
+Asia,Standard Indonesian,indo1316,PAIN,wadu,wadu,wadu,4
+Asia,Javanese,java1254,PAIN,aɖ̥uh,aɖ̥uh,aduh,4
+Asia,Javanese,java1254,PAIN,ɖ̥uh,ɖ̥uh,duh,3
+Asia,Javanese,java1254,PAIN,b̥ijuŋ-b̥ijuŋ,b̥ijuŋ-b̥ijuŋ,biyuNbiyuN,10
+Asia,Javanese,java1254,PAIN,ʈɔjuŋ,ʈɔjuŋ,toyuN,5
+Asia,Kalamang,kara1499,PAIN,adi,adi,adi,3
+Asia,Kalamang,kara1499,PAIN,adu,adu,adu,3
+Asia,Korean,kore1280,PAIN,aikʰo,aikʰo,aiko,4
+Asia,Korean,kore1280,PAIN,aikʰwu,aikʰwu,aikwu,5
+Asia,Korean,kore1280,PAIN,ajkʰo,ajkʰo,ayko,4
+Asia,Korean,kore1280,PAIN,ajkʰwu,ajkʰwu,aykwu,5
+Asia,Korean,kore1280,PAIN,ajwu,ajwu,aywu,4
+Asia,Korean,kore1280,PAIN,eikʰwu,eikʰwu,eikwu,5
+Asia,Korean,kore1280,PAIN,ejkʰwu,ejkʰwu,eykwu,5
+Asia,Kürtop,kurt1248,PAIN,ʔala,ʔala,7ala,4
+Asia,Kürtop,kurt1248,PAIN,ʔat͡sa,ʔatsa,7aca,4
+Asia,Lao,laoo1244,PAIN,kēːw kēːw,kēːw kēːw,kewkew,6
+Asia,Lao,laoo1244,PAIN,oːy,o:y,oi,2
+Asia,Lao,laoo1244,PAIN,ʔòːy,ʔòːy,7oi,3
+Asia,Lao,laoo1244,PAIN,ʔǔy,ʔǔy,7ui,3
+Asia,Manchu,manc1252,PAIN,aɾa,aɾa,ara,3
+Asia,Manchu,manc1252,PAIN,aɾa faɾa,aɾa faɾa,arafara,7
+Asia,Manchu,manc1252,PAIN,aɾakhɘ,aɾakhɘ,arakh3,6
+Asia,Manchu,manc1252,PAIN,aɾɘ,aɾɘ,ar3,3
+Asia,Manchu,manc1252,PAIN,aɾkhɘ,aɾkhɘ,arkh3,5
+Asia,Manchu,manc1252,PAIN,atghuː,atghu:,atghu,5
+Asia,Manchu,manc1252,PAIN,ɘŋ,ɘŋ,3N,2
+Asia,Mandarin Chinese,mand1415,PAIN,aː,a:,a,1
+Asia,Mandarin Chinese,mand1415,PAIN,ai yo,ai yo,aiio,4
+Asia,Mandarin Chinese,mand1415,PAIN,tʰoŋ ɑ,tʰoŋ ɑ,toNo,4
+Asia,Maranao,mara1404,PAIN,adaʔdaʔy,adaʔdaʔy,ada7da7i,8
+Asia,Maranao,mara1404,PAIN,adaʔwadaʔw,adaʔwadaʔw,ada7wada7w,10
+Asia,Maranao,mara1404,PAIN,aidaʔw,aidaʔw,aida7w,6
+Asia,Burmese,nucl1310,PAIN,ame leiː,ame lei:,amelei,6
+Asia,Burmese,nucl1310,PAIN,amaleiː,amalei:,amalei,6
+Asia,Burmese,nucl1310,PAIN,əmè léi,əmè léi,3melei,6
+Asia,Burmese,nucl1310,PAIN,əmaléi,əmaléi,3malei,6
+Asia,Burmese,nucl1310,PAIN,ame minː,ame min:,amemin,6
+Asia,Burmese,nucl1310,PAIN,əmè mí̃,əmè mí̃,3memi,5
+Asia,Burmese,nucl1310,PAIN,ame,ame,ame,3
+Asia,Burmese,nucl1310,PAIN,əmè,əmè,3me,3
+Asia,Japan,nucl1643,PAIN,itai,itai,itai,4
+Asia,Shan,shan1277,PAIN,ʔǎː,ʔǎː,7a,2
+Asia,Shan,shan1277,PAIN,ʔáː láː láː,ʔáː láː láː,7alala,6
+Asia,Shanghai,shan1293,PAIN,tʰoŋ,tʰoŋ,toN,3
+Asia,Thai,thai1261,PAIN,ʔɔ̌j,ʔɔ̌j,7oy,3
+Asia,Thai,thai1261,PAIN,ʔōːj,ʔōːj,7oy,3
+Asia,Thai,thai1261,PAIN,ʔóːj,'ʔóːj,7oy,3
+Asia,Thai,thai1261,PAIN,ʔúj,ʔúj,7uy,3
+Asia,Thai,thai1261,PAIN,ʔūːj,'ʔūːj,7uy,3
+Asia,Thai,thai1261,PAIN,ʔɔ̌j,'ʔɔ̌j,7oy,3
+Asia,Tibetan,tibe1272,PAIN,ɐt͡sʰɐ(mɐ),ɐtsʰɐ(mɐ),acama,5
+Asia,Tibetan,tibe1272,PAIN,ɐt͡ʃʰu,ɐt͡ʃʰu,aCu,3
+Asia,Tibetan,tibe1272,PAIN,ɐt͡ʃʰut͡ʃʰu,ɐt͡ʃʰut͡ʃʰu,aCuCu,5
+Asia,Tibetan,tibe1272,PAIN,huhu,huhu,huhu,4
+Asia,Vietnamese,viet1252,PAIN,a24,a24,a,1
+Asia,Vietnamese,viet1252,PAIN,aj24,aj24,ay,2
+Asia,Vietnamese,viet1252,PAIN,ca33 ca312,ca33 ca312,TaTa,4
+Asia,Vietnamese,viet1252,PAIN,waj33 waj24,waj33 waj24,wayway,6
+Asia,Vietnamese,viet1252,PAIN,wɛ33 wɛ32,wɛ33 wɛ32,wEwE,4
+Asia,Yao,yang1310,PAIN,jɘuʔ˦˧˦˧ ,jɘuʔ˦˧˦˧ ,y3u7,4
+Australia,Mawng,maun1240,JOY,yo,yo,io,2
+Australia,Nyangumarta,nyan1301,JOY,jaranica,jaranica,yaraniTa,8
+Australia,Warlpiri,warl1254,JOY,jatiji,jatiji,yatiyi,6
+Australia,Warlpiri,warl1254,JOY,waɽaji,waɽaji,warayi,6
+Australia,Wik-Mungkan,wikm1247,JOY,joːw,joːw,yow,3
+Australia,Wik-Mungkan,wikm1247,JOY,ɲom,ɲom,5om,3
+Australia,Yanyuwa,yany1243,JOY,ɡaɳuɻawad̪awama,ɡaɳuɻawad̪awama,ganurawadawama,14
+Australia,Yanyuwa,yany1243,JOY,ɡaɳuɻawad̪awarma,ɡaɳuɻawad̪awarma,ganurawadawarma,15
+Australia,Yugambeh,yuga1244,JOY,bawbaw,bawbaw,bawbaw,6
+Australia,Paakantyi,darl1243,PAIN,jaka pal̪t̪aji,jaka pal̪t̪aji,yakapaltayi,11
+Australia,Martuthunira,mart1255,PAIN,jakaji,jakaji,yakayi,6
+Australia,Martuthunira,mart1255,PAIN,jakaʈaji,jakaʈaji,yakatayi,8
+Australia,Wangkumara/Galali,ngur1261,PAIN,jakaji,jakaji,yakayi,6
+Australia,Wangkumara/Galali,ngur1261,PAIN,ŋanjari,ŋanjari,Nanyari,7
+Australia,Nyangumarta,nyan1301,PAIN,waʈawu,waʈawu,watawu,6
+Australia,Nyulnyul,nyul1247,PAIN,jaw,jaw,yaw,3
+Australia,Tiwi ,tiwi1244,PAIN,jaji,jaji,yayi,4
+Australia,Tiwi ,tiwi1244,PAIN,jakaji,jakaji,yakayi,6
+Australia,Tiwi ,tiwi1244,PAIN,wakaji,wakaji,wakayi,6
+Australia,Walmajarri,walm1241,PAIN,waɻawu,waɻawu,warawu,6
+Australia,Warlpiri,warl1254,PAIN,japacaji,japacaji,yapaTayi,8
+Australia,Wik-Mungkan,wikm1247,PAIN,jakkej,jakkej,yakkey,6
+Australia,Wik-Mungkan,wikm1247,PAIN,jakkaj,jakkaj,yakkay,6
+Australia,Woiwurrung,woiw1237,PAIN,jaɻɡa,jaɻɡa,yarga,5
+Australia,Yanyuwa,yany1243,PAIN,jakiri,jakiri,yakiri,6
+Europe,Danish,dani1285,DISGUST,aðʔ,aðˀ,a87,3
+Europe,Polish,poli1260,DISGUST,ɛx,ɛx,Ex,2
+Europe,Russian,russ1263,DISGUST,fu,fu,fu,2
+Europe,Russian,russ1263,DISGUST,tfu,t'fu,tfu,3
+Europe,Spanish,stan1288,DISGUST,bit͡ʃo,bit͡ʃo,biCo,4
+Europe,Spanish,stan1288,DISGUST,gwaka,gwaka,gwaka,5
+Europe,Spanish,stan1288,DISGUST,gwakala,gwakala,gwakala,7
+Europe,Spanish,stan1288,DISGUST,gwakatela,gwakatela,gwakatela,9
+Europe,Spanish,stan1288,DISGUST,pwa,pwa,pwa,3
+Europe,Spanish,stan1288,DISGUST,uf,uf,uf,2
+Europe,French,stan1290,DISGUST,bɛʁk,bɛʁk,bEXk,4
+Europe,French,stan1290,DISGUST, bøʁk, bøʁk,beXk,4
+Europe,French,stan1290,DISGUST,pwɑ,pwɑ,pwo,3
+Europe,English,stan1293,DISGUST,ɑː,ɑː,o,1
+Europe,English,stan1293,DISGUST,bɔː,bɔː,bo,2
+Europe,English,stan1293,DISGUST,ɡɪk,ɡɪk,gik,3
+Europe,English,stan1293,DISGUST,ɪk,ɪk,ik,2
+Europe,English,stan1293,DISGUST,jɑː,jɑː,yo,2
+Europe,English,stan1293,DISGUST,jiːk,jiːk,yik,3
+Europe,English,stan1293,DISGUST,jɪəx,jɪəx,yi3x,4
+Europe,English,stan1293,DISGUST,jɪw,jɪw,yiw,3
+Europe,English,stan1293,DISGUST, ɪw, ɪw,iw,2
+Europe,English,stan1293,DISGUST,jʌk,jʌk,yok,3
+Europe,English,stan1293,DISGUST,krap,krap,krap,4
+Europe,English,stan1293,DISGUST,pɑː,pɑː,po,2
+Europe,English,stan1293,DISGUST,pjuː,pjuː,pyu,3
+Europe,English,stan1293,DISGUST,pʃɔː,pʃɔː,pSo,3
+Europe,English,stan1293,DISGUST,pʊf,pʊf,puf,3
+Europe,English,stan1293,DISGUST, puːf, puːf,puf,3
+Europe,English,stan1293,DISGUST,va,va,va,2
+Europe,German,stan1295,DISGUST,ɛː,ɛː,E,1
+Europe,German,stan1295,DISGUST, ɛ, ɛ,E,1
+Europe,German,stan1295,DISGUST,jak,jak,yak,3
+Europe,Danish,dani1285,JOY,huˈʁa,huˈʁa,huXa,4
+Europe,Sanzhi Dargwa,darg1241,JOY,haj-haj,haj-haj,hayhay,6
+Europe,Sanzhi Dargwa,darg1241,JOY,huja,huja,huya,4
+Europe,Polish,poli1260,JOY,ˈsupɛr,ˈsupɛr,supEr,5
+Europe,Russian,russ1263,JOY,urɑ,urɑ,uro,3
+Europe,Spanish,stan1288,JOY,albrisjas,albrisjas,albrisyas,9
+Europe,Spanish,stan1288,JOY,aleluʝa,aleluʝa,aleluZa,7
+Europe,Spanish,stan1288,JOY,axa,axa,axa,3
+Europe,Spanish,stan1288,JOY,biβa,biβa,biba,4
+Europe,Spanish,stan1288,JOY,bɾaβo,bɾaβo,brabo,5
+Europe,Spanish,stan1288,JOY,euɾeka,euɾeka,eureka,6
+Europe,Spanish,stan1288,JOY,fenomeno,fenomeno,fenomeno,8
+Europe,Spanish,stan1288,JOY,t͡ʃit,t͡ʃit,Cit,3
+Europe,Spanish,stan1288,JOY, t͡ʃuta, t͡ʃuta,Cuta,4
+Europe,Spanish,stan1288,JOY,ujujuj,ujujuj,uyuyuy,6
+Europe,Spanish,stan1288,JOY,ura,ura,ura,3
+Europe,French,stan1290,JOY,’jupi,’jupi,yupi,4
+Europe,French,stan1290,JOY,’wa,’wa,wa,2
+Europe,French,stan1290,JOY,bʁavo,bʁavo,bXavo,5
+Europe,French,stan1290,JOY,øʁeka,øʁeka,eXeka,5
+Europe,French,stan1290,JOY,wau,wau,wau,3
+Europe,English,stan1293,JOY,ɑːˈhɑː,ɑːˈhɑː,oho,3
+Europe,English,stan1293,JOY,brɑːˈvəʊ,brɑːˈvəʊ,brov3u,6
+Europe,English,stan1293,JOY,ˈɔːsəm,ˈɔːsəm,os3m,4
+Europe,English,stan1293,JOY, ˈɔːsm, ˈɔːsm,osm,3
+Europe,English,stan1293,JOY,əʊˈjeɪ,əʊˈjeɪ,3uyei,5
+Europe,English,stan1293,JOY,jɑːˈhuː,jɑːˈhuː,yohu,4
+Europe,English,stan1293,JOY,jeɪ,jeɪ,yei,3
+Europe,English,stan1293,JOY,ˈʌəʊ,ˈʌˌəʊ,o3u,3
+Europe,English,stan1293,JOY,viːv,viːv,viv,3
+Europe,English,stan1293,JOY,wɑː,wɑː,wo,2
+Europe,English,stan1293,JOY,wɑˈhu,wɑˈhu,wohu,4
+Europe,English,stan1293,JOY,wəˈheɪ,wəˈheɪ,w3hei,5
+Europe,German,stan1295,JOY, braːvo, bra:vo,bravo,5
+Europe,German,stan1295,JOY,aː,aː,a,1
+Europe,German,stan1295,JOY,ahaː,a'ha:,aha,3
+Europe,German,stan1295,JOY, aha, a'ha,aha,3
+Europe,German,stan1295,JOY,hʊˈʀaː,hʊˈʀaː,hura,4
+Europe,German,stan1295,JOY,mɛnʃ,mɛnʃ,mEnS,4
+Europe,German,stan1295,JOY,o,o,o,1
+Europe,German,stan1295,JOY,ˈʃpɪt͡sə,ˈʃpɪtsə,Spic3,5
+Europe,Danish,dani1285,PAIN,ɑwʔ,ɑwˀ,ow7,3
+Europe,Polish,poli1260,PAIN,aw,aw,aw,2
+Europe,Polish,poli1260,PAIN,awa,awa,awa,3
+Europe,Russian,russ1263,PAIN,ɑj,ɑj,oy,2
+Europe,Spanish,stan1288,PAIN,uste,uste,uste,4
+Europe,French,stan1290,PAIN,’uj,’uj,uy,2
+Europe,French,stan1290,PAIN,aj,aj,ay,2
+Europe,French,stan1290,PAIN,aut͡ʃ,autʃ,auC,3
+Europe,English,stan1293,PAIN, jiːˈaʊ, jiːˈaʊ,yiau,4
+Europe,English,stan1293,PAIN,ɑː,ɑː,o,1
+Europe,English,stan1293,PAIN,aʊ,aʊ,au,2
+Europe,English,stan1293,PAIN,aʊt͡ʃ,aʊtʃ,auC,3
+Europe,English,stan1293,PAIN,ˈəʊ,ˈəʊ,3u,2
+Europe,English,stan1293,PAIN,hʌɪ,hʌɪ,hoi,3
+Europe,English,stan1293,PAIN,ˈuːjə,ˈuːjə,uy3,3
+Europe,English,stan1293,PAIN,ʌɪ,ʌɪ,oi,2
+Europe,German,stan1295,PAIN,aʊ,aʊ,au,2
+Europe,German,stan1295,PAIN, aʊa, aʊa,aua,3
+Europe,German,stan1295,PAIN,əʊ,əʊ,3u,2
+Latin America,Baniwa,bani1255,DISGUST,t͡seː,tse:,ce,2
+Latin America,Barasana-Eduria,bara1380,DISGUST,ɑˈdée,ɑˈdée,odee,4
+Latin America,Barasana-Eduria,bara1380,DISGUST,ɑˈdí,ɑˈdí,odi,3
+Latin America,Camënts̈á,cams1241,DISGUST,a tataj,a tataj,atatay,6
+Latin America,Camënts̈á,cams1241,DISGUST,ɕo,ɕo,So,2
+Latin America,Cavineña,cavi1250,DISGUST,aʨi,a'ʨi,aCi,3
+Latin America,Cubeo,cube1242,DISGUST,ait͡ʃĩa,aitʃĩa,aiCia,5
+Latin America,Guahibo,guah1255,DISGUST,idi,idi,idi,3
+Latin America,Inga,inga1252,DISGUST,at͡sat͡sai,atsatsai,acacai,6
+Latin America,Inga,inga1252,DISGUST,tatai,tatai,tatai,5
+Latin America,Inga,inga1252,DISGUST,t͡sat͡sai,tsatsai,cacai,5
+Latin America,Machiguenga,mach1267,DISGUST,hmmmʔ,hmmmʔ,hmmm7,5
+Latin America,Machiguenga,mach1267,DISGUST,ontisaroro ,onti'saroro ,ontisaroro,10
+Latin America,Machiguenga,mach1267,DISGUST,tehee,tehee,tehee,5
+Latin America,Machiguenga,mach1267,DISGUST,tehehee,tehehee,tehehee,7
+Latin America,Matsés,mats1244,DISGUST,ehʔ,ehʔ,eh7,3
+Latin America,Matsés,mats1244,DISGUST,ɨŋʔ,ɨŋʔ,3N7,3
+Latin America,Matsés,mats1244,DISGUST,jeː,je:,ye,2
+Latin America,Matsés,mats1244,DISGUST,uŋʔ,uŋʔ,uN7,3
+Latin America,Matsés,mats1244,DISGUST,wek,wek,wek,3
+Latin America,Capanahua,ship1254,DISGUST,naan,naan,naan,4
+Latin America,Capanahua,ship1254,DISGUST,taa ʔiʔki  ,taa ʔiʔki  ,taa7i7ki,8
+Latin America,Capanahua,ship1254,DISGUST,ʔeee ʔiʔkii  ,ʔeee ʔiʔkii  ,7eee7i7kii,10
+Latin America,Tupinambá,tupi1273,DISGUST,rau,rau,rau,3
+Latin America,Aguaruna,agua1253,JOY,jaxɑuwajaʔ,jaxɑuwajaʔ,yaxouwaya7,10
+Latin America,Aguaruna,agua1253,JOY,xɑut͡ʃaɨ,xɑutʃaɨ,xouCa3,6
+Latin America,Aguaruna,agua1253,JOY, xɑut͡ʃa, xɑutʃa,xouCa,5
+Latin America,Barasana-Eduria,bara1380,JOY,ɑˈbɨ́ɨ,ɑˈbɨ́ɨ,ob33,4
+Latin America,Barasana-Eduria,bara1380,JOY,ˈbɘ́ɘ,ˈbɘ́ɘ,b33,3
+Latin America,Barasana-Eduria,bara1380,JOY,ˈhɑ́ɘ,ˈhɑ́ɘ,ho3,3
+Latin America,Camënts̈á,cams1241,JOY,a t͡ʃalaj,a tʃalaj,aCalay,6
+Latin America,Camënts̈á,cams1241,JOY,as kokaje,as kokaje,askokaye,8
+Latin America,Camënts̈á,cams1241,JOY,as kwak,as kwak,askwak,6
+Latin America,Camënts̈á,cams1241,JOY,elaj,elaj,elay,4
+Latin America,Camënts̈á,cams1241,JOY,ilaj,ilaj,ilay,4
+Latin America,Camënts̈á,cams1241,JOY,nokaraj,nokaraj,nokaray,7
+Latin America,Camënts̈á,cams1241,JOY,nʒa,nʒa,nZa,3
+Latin America,Camënts̈á,cams1241,JOY,xwane,xwane,xwane,5
+Latin America,Cavineña,cavi1250,JOY,ehe ademe,ehe ademe,eheademe,8
+Latin America,Guahibo,guah1255,JOY,ina,ina,ina,3
+Latin America,Inga,inga1252,JOY,andis,andis,andis,5
+Latin America,Inga,inga1252,JOY,at͡ʃalai,atʃalai,aCalai,6
+Latin America,Inga,inga1252,JOY,axai,axai,axai,4
+Latin America,Inga,inga1252,JOY,aʎita,aʎita,aLita,5
+Latin America,Inga,inga1252,JOY,aʎiura,aʎiura,aLiura,6
+Latin America,Inga,inga1252,JOY,kuɕit͡ʃiwangi ,kuɕitʃiwangi ,kuSiCiwangi,11
+Latin America,Inga,inga1252,JOY,kusikut͡ʃiwangi,kusikutʃiwangi,kusikuCiwangi,13
+Latin America,Inga,inga1252,JOY,t͡ʃalai,tʃalai,Calai,5
+Latin America,Inga,inga1252,JOY,wanai ,wanai ,wanai,5
+Latin America,Inga,inga1252,JOY,wanakuɕi,wanakuɕi,wanakuSi,8
+Latin America,Inga,inga1252,JOY,wanat͡ʃu,wanatʃu,wanaCu,6
+Latin America,Machiguenga,mach1267,JOY,ee,ee,ee,2
+Latin America,Machiguenga,mach1267,JOY,eee,eee,eee,3
+Latin America,Machiguenga,mach1267,JOY,ohohoo,ohohoo,ohohoo,6
+Latin America,Machiguenga,mach1267,JOY,tehehee,tehehee,tehehee,7
+Latin America,Palikúr,pali1279,JOY,ihe,ihe,ihe,3
+Latin America,Sharanahua,shar1245,JOY,ait͡ʃo,aitʃo,aiCo,4
+Latin America,Tupinambá,tupi1273,JOY,aʋiɛ,aʋiɛ,aviE,4
+Latin America,Tupinambá,tupi1273,JOY,aʋiɛbɛ,aʋiɛbɛ,aviEbE,6
+Latin America,Tupinambá,tupi1273,JOY,tɛ,tɛ,tE,2
+Latin America,Yaminahua,yami1256,JOY,ait͡ʃo̝,aitʃo̝,aiCo,4
+Latin America,Aguaruna,agua1253,PAIN,aáʔ,aáʔ,aa7,3
+Latin America,Baniwa,bani1255,PAIN,ai,ai,ai,2
+Latin America,Baniwa,bani1255,PAIN,meː,me:,me,2
+Latin America,Baniwa,bani1255,PAIN,pat͡si,patsi,paci,4
+Latin America,Barasana-Eduria,bara1380,PAIN,ɑˈd͡ʒɑ́ɑ,ɑˈdʒɑ́ɑ,ojoo,4
+Latin America,Barasana-Eduria,bara1380,PAIN,ɑˈd͡ʒɘ́ˈɘ́,ɑˈdʒɘ́ˈɘ́,oj33,4
+Latin America,Barasana-Eduria,bara1380,PAIN,ɑˈd͡ʒɨ́ɨ,ɑˈdʒɨ́ɨ,oj33,4
+Latin America,Barasana-Eduria,bara1380,PAIN,ɑˈɡɑ́ɑ́,ɑˈɡɑ́ɑ́,ogoo,4
+Latin America,Barasana-Eduria,bara1380,PAIN,ɑ́ˈɡɑ́ɨ,ɑ́ˈɡɑ́ɨ,ogo3,4
+Latin America,Barasana-Eduria,bara1380,PAIN,ɑˈɡɨ́,ɑˈɡɨ́,og3,3
+Latin America,Camënts̈á,cams1241,PAIN,ayay,ayay,aiai,4
+Latin America,Cocama,coca1259,PAIN,akatai,akatai,akatai,6
+Latin America,Cocama,coca1259,PAIN,akat͡sai,akatsai,akacai,6
+Latin America,Cocama,coca1259,PAIN,akawaɨ,akawaɨ,akawa3,6
+Latin America,Cocama,coca1259,PAIN,t͡sɨj,tsɨj,c3y,3
+Latin America,Cubeo,cube1242,PAIN,bɨ,bɨ,b3,2
+Latin America,Cubeo,cube1242,PAIN,mumimumi,mumimumi,mumimumi,8
+Latin America,Cubeo,cube1242,PAIN,ɲĩɲĩ,ɲĩɲĩ,5i5i,4
+Latin America,Guahibo,guah1255,PAIN,xa,xa,xa,2
+Latin America,Guahibo,guah1255,PAIN,xaː,xa:,xa,2
+Latin America,Guahibo,guah1255,PAIN,xakwe,xakwe,xakwe,5
+Latin America,Guahibo,guah1255,PAIN,akwe,akwe,akwe,4
+Latin America,Inga,inga1252,PAIN,agɨ ,agɨ ,ag3,3
+Latin America,Inga,inga1252,PAIN,atane,atane,atane,5
+Latin America,Inga,inga1252,PAIN,iai,iai,iai,3
+Latin America,Koreguaje,kore1283,PAIN,aʔcɨ,aʔcɨ,a7T3,4
+Latin America,Machiguenga,mach1267,PAIN,ajaa,ajaa,ayaa,4
+Latin America,Machiguenga,mach1267,PAIN,ajakarioo,ajakarioo,ayakarioo,9
+Latin America,Machiguenga,mach1267,PAIN,kaat͡si,kaatsi,kaaci,5
+Latin America,Matsés,mats1244,PAIN,eː,e:,e,1
+Latin America,Matsés,mats1244,PAIN,eː eː eː,e: e: e:,eee,3
+Latin America,Matsés,mats1244,PAIN,oː,o:,o,1
+Latin America,Matsés,mats1244,PAIN,oː oː oː,o: o: o:,ooo,3
+Latin America,Muinane,muin1242,PAIN,agɨ ,agɨ ,ag3,3
+Latin America,Muinane,muin1242,PAIN,ajɨ,ajɨ,ay3,3
+Latin America,Palikúr,pali1279,PAIN,akaː,aka:,aka,3
+Latin America,Palikúr,pali1279,PAIN,akaiah,akaiah,akaiah,6
+Latin America,Palikúr,pali1279,PAIN,uɔdií,uɔdií,uodii,5
+Latin America,Sharanahua,shar1245,PAIN,arii,arii,arii,4
+Latin America,Tupinambá,tupi1273,PAIN,akai,akai,akai,4
+Latin America,Tupinambá,tupi1273,PAIN,akɛ,akɛ,akE,3
+Latin America,Tupinambá,tupi1273,PAIN,akɨ,akɨ,ak3,3
+Latin America,Tupinambá,tupi1273,PAIN,amaeiau,amaeiau,amaeiau,7
+Latin America,Tupinambá,tupi1273,PAIN,mã,mã,ma,2
+Latin America,Tupinambá,tupi1273,PAIN,moat͡ʃɛimã,moatʃɛimã,moaCEima,8
+Latin America,Tupinambá,tupi1273,PAIN,moat͡ʃɛĩmã,moatʃɛĩmã,moaCEima,8
+Latin America,Tupinambá,tupi1273,PAIN,ta,ta,ta,2
+Latin America,Tuyuca,tuyu1244,PAIN,acuéi,acuéi,aTuei,5
+Latin America,Tuyuca,tuyu1244,PAIN,aga,aga,aga,3
+Latin America,Tuyuca,tuyu1244,PAIN,agaɨ,agaɨ,aga3,4
+Latin America,Tuyuca,tuyu1244,PAIN,agɨ,agɨ,ag3,3
+Latin America,Yaminahua,yami1256,PAIN,ai,ai,ai,2
+Latin America,Yaminahua,yami1256,PAIN,arí,arí,ari,3
+Latin America,Yaminahua,yami1256,PAIN,ari,ari,ari,3
+Latin America,Yaminahua,yami1256,PAIN,aripé,aripé,aripe,5
+Latin America,Yaminahua,yami1256,PAIN,aripe,aripe,aripe,5
+Latin America,Yaminahua,yami1256,PAIN,eai,eai,eai,3
