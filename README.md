@@ -5,7 +5,10 @@ Maia Ponsonnet, Christophe Coupe, François Pellegrino, Garcia Arasco Aitana, an
 
 The 'code' files are as follows:
 
-1. 
+1. Generate_SuppPub5_and_SuppPub6.R: A .R file to call 'Interjections_statistical_analysis.Rmd' to work either with ASJP or Lexibank data
+2. Interjections_statistical_analysis.Rmd: The .Rmd file with the analyses of the interjections (with a parameter to work either with ASJP or Lexibank as the source for non-interjections)
+3. Vocalizations_statistical_analysis.Rmd: The .Rmd file with the analyses of the vocalizations
+
 
 
 The 'data' files contain the following information:
