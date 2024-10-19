@@ -3,10 +3,15 @@
 This folder contains supplementary materials for the following publication:
 Maia Ponsonnet, Christophe Coupe, François Pellegrino, Garcia Arasco Aitana, and Katarzyna Pisanski (2024). Vowel signatures in emotional interjections and nonlinguistic vocalizations expressing pain, disgust, and joy across languages. Journal of the Acoustic Society of America. DOI: 10.1121/10.0032454
 
-The files contain the following information:
+The 'code' files are as follows:
+
+1. 
+
+
+The 'data' files contain the following information:
 
 1. dataset(final).ASJP.intj.csv --> Data on collected interjections, with in the columns from left to right and for each interjection:
-   - World region (REGION)
+   - World region where the language is spoken (REGION)
    - Language name (LANGUAGE)
    - Glottocode of the language (GLOTTOCODE)
    - Emotion expressed by the interjection - PAIN, DISGUST or ANGER (EMOTION)
@@ -26,7 +31,13 @@ The files contain the following information:
 
 4. dataset(final).Lexibank.lexicon.csv --> Data on lexical forms (non-interjections) extracted from Lexibank in the languages where interjections were collected. Same columns as for  'dataset(final).ASJP.lexicon.csv'
 
-5. Data sources for interjections.ods --> Sources for the collection of the interjections
+5. Data sources for interjections.csv --> Sources for the collection of the interjections. Columns from left to right:
+   - World region where the language is spoken (AREA)
+   - Name of the language (LANGUAGE)
+   - Glottocode of the language (GLOTTOCODE)
+   - Source of data (SOURCE)
+   - URL of the source (LINK TO SOURCE)
+   - URL of the database (DATABASE) 
 
 6. Vocalizations.csv --> Experimental data on vocalizations, with in the columns from left to right for each observation:
    - Name of the file containing the audio recording (file)
