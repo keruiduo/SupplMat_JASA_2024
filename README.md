@@ -28,7 +28,7 @@ The files contain the following information:
 
 5. Data sources for interjections.ods --> Sources for the collection of the interjections
 
-6. Vocalizations.ods --> Experimental data on vocalizations, with in the columns from left to right for each observation:
+6. Vocalizations.csv --> Experimental data on vocalizations, with in the columns from left to right for each observation:
    - Name of the file containing the audio recording (file)
    - Speaker's primary language (CN for Chinese; EN for English; ES for Spanish; JP for Japanese; TUR for Turkish) (Language)
    - Speaker's ID (Idvocaliser)
@@ -61,7 +61,6 @@ The files contain the following information:
    - Emotion (Disgust, Pain or Joy) (em)
    - Speaker's primary language (lang)
    - Speaker's gender (M for Man; F for Woman; NB for Non-binary) (Sex)
-(also given in the second sheet of the .ods file)
 
 These files can be used as input for the various pieces of code provided in Supplementary Materials.
 
