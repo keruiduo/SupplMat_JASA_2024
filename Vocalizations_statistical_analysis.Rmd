@@ -1,0 +1,506 @@
+---
+title: "Analysis of the vocalizations"
+author: "Anonymous"
+date: 'Last update: `r format(Sys.time(), "%d %B, %Y")`'
+output:
+  html_document:
+    code_download: no
+    code_folding: show
+    highlight: tango
+    number_sections: yes
+    theme: cerulean
+    toc: yes
+    toc_depth: 3
+    toc_float:
+      collapsed: yes
+      smooth_scroll: no
+---
+
+<style>
+h1 {font-size: 24px;}
+h1.title {font-size: 34px;}
+h2 {font-size: 18px;}
+h3 {font-size: 16px;}
+h3.subtitle {font-size: 24px}
+h4 {font-size: 14px;}
+h4.author {font-size: 20px}
+h5 {font-size: 13px;}
+h6 {font-size: 12px;}
+caption, .caption {
+color: #555555;
+font-weight: bold;
+font-size: 110%;
+text-align: left}
+blockquote{color: #317EAC;
+padding:10px 10px;
+font-size:100%;
+margin:0 0 10px;
+border-left:7px solid #317EAC}
+</style>
+
+***
+
+# Preparatory steps for the Markdown file
+
+Setting the options for *knitr*...
+```{r setup_knitr, echo=T, warning = F}
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE,
+                       comment = NA,
+                       prompt  = FALSE,
+                       cache   = FALSE,
+                       warning = FALSE,
+                       message = FALSE,
+                       fig.align="center",
+                       fig.width = 8.125,
+                       out.width = "100%",
+                       fig.path = "D:/figures/Vocalizations/150dpi/",
+                       dev = c('png', 'tiff'),
+                       dev.args = list(png = list(type = "cairo"), tiff = list(compression = 'lzw')),
+                       dpi = 150,
+                       cache = TRUE,
+                       cache.path = "D:/cache/Vocalizations/150dpi/",
+                       autodep = TRUE)
+options(width = 1000, scipen = 999, knitr.kable.NA = '')
+```
+
+Setting the options for *summarytools*...
+```{r setup_st, results = "hide"}
+library(summarytools)
+st_options(plain.ascii        = FALSE,        # Always use this option in Rmd documents
+            style             = "rmarkdown", # Always use this option in Rmd documents
+            footnote          = NA,          # Makes html-rendered results more concise
+            subtitle.emphasis = FALSE)  # Improves layout with some rmarkdown themes
+st_css()
+```
+
+Loading libraries...
+```{r loading_libraries}
+library(tidyverse)
+library(mclogit) # For mblogit
+library(emmeans) # To compute contrasts with p-values
+library(sjPlot) # To display the figure
+library(kableExtra) # To  create nice tables with Markdown
+```
+
+Cleaning the memory...
+```{r cleaning_memory}
+rm(list = ls(all.names = TRUE))
+```
+
+Specifying a seed for random number generation, for the sake of reproducibility:
+```{r set_seed}
+set.seed(123)
+```
+
+# Loading and pre-processing the data
+
+```{r}
+df <- read.csv(file = "Vocalizations.csv", sep = ";", fileEncoding = "UTF-8")
+```
+
+```{r}
+df <- df %>% mutate_at(c("Context", "Language", "Idvocaliser", "ASJP"), as.factor)
+```
+
+We define colors for the emotions:
+```{r}
+emotion_colors = c(Pain = "#FF0000", Disgust = "#0000FF", Joy = "#DFAA00")
+```
+
+# Filtering the data and selecting columns
+
+We need to remove the vocalizations coded as "PI" in the **Inter** column (PI meaning primary interjections):
+
+```{r}
+df <- df %>% filter(Inter != "PI")
+```
+
+We only keep the columns we are interested in:
+```{r}
+df <- df %>% select(Idvocaliser, Language, Context, ASJP)
+```
+
+We order the ASJP vocalic classes:
+```{r}
+df <- df %>% mutate(ASJP = fct_relevel(ASJP, "a", "e", "E", "3", "i", "o", "u"))
+```
+
+# Inspecting the data
+
+First rows of the table:
+```{r}
+df %>%
+  head(n = 10) %>%
+  kable() %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+Number or observations:
+```{r}
+nrow(df)
+```
+
+Summary of the table:
+```{r}
+df %>%
+  dfSummary() %>%
+  print(method = 'render', footnote = NA)
+```
+
+Proportions of the different vowels for the different contexts/emotions (the proportions sum to 1 for a given context/emotion):
+```{r}
+df_counts <- df %>%
+  group_by(ASJP, Context) %>%
+  tally()
+
+df_emotion_counts <- df_counts %>%
+  group_by(Context) %>%
+  summarize(n_emotion = sum(n))
+  
+df_counts %>%
+  inner_join(df_emotion_counts) %>%
+  mutate(proportion = n / n_emotion) %>%
+  select(-n, -n_emotion) %>%
+  arrange(Context, ASJP) %>%
+  kable() %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+# Multinomial regression
+We want to assess whether the context (disgust, joy, pain) significantly influences the vowel produced by the participants. To put it differently, we want to test whether certain (ASPJ) vowels are more common in one emotion category than any other, controlling (if possible) for 'IDvocaliser' and Language. 
+
+With *mblogit()* from the **mclogit** package, one can perform multinomial regressions with random effects.
+
+## Building and comparing different models without interactions
+
+We compare four models without interactions, all with **ASJP** as predicted variable and **Context** as fixed effect: 
+
+* model.0 without random effects
+* model.1 with **Language** as random effect
+* model.2 with **Idvocaliser** as random effect
+* model.3 with **Idvocaliser** nested into **Language** as random structure
+* model.4 with **Language** as additional fixed effect (and no random effect)
+* model.5 with **Idvocaliser** as random effect and **Language** as additional fixed effect
+
+For the sake of simplicity, especially because of the relatively large number of levels for both **Context** and **Language**, and also the small number of observations, we do not assess the interaction between these two factors.
+
+```{r warning = T}
+model.0 <- mblogit(ASJP ~ Context, data = df)
+```
+
+
+```{r warning = T}
+model.1 <- mblogit(ASJP ~ Context, random = ~ 1|Language, data = df)
+```
+
+
+```{r warning = T}
+model.2 <- mblogit(ASJP ~ Context, random = ~ 1|Idvocaliser, data = df)
+```
+
+
+```{r warning = T}
+model.3 <- mblogit(ASJP ~ Context, random = ~ 1|Idvocaliser/Language, data = df)
+```
+
+
+```{r warning = T}
+model.4 <- mblogit(ASJP ~ Context + Language, data = df)
+```
+
+
+```{r warning = T}
+model.5 <- mblogit(ASJP ~ Context + Language, random = ~ 1|Idvocaliser, data = df)
+```
+
+We get a worrying message for model.3, so we do not consider it further. Other models give warnings for some iterations too, but the final iteration does not, which is reassuring.
+
+We compare the deviance and AIC of all models but model.3:
+```{r}
+models <- list(model.0, model.1, model.2, model.4, model.5)
+deviances <- lapply(models, deviance) %>% unlist
+
+tibble(Model = c("model.0", "model.1", "model.2", "model.4", "model.5"),
+       Deviance = deviances) %>%
+  cbind(AIC(model.0, model.1, model.2, model.4, model.5)) %>%
+  kable() %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+model.4 has the best deviance and the second best AIC. Since we are more interested in the fit to the data than in parsimony, we select model.4 as our best model.
+
+Models with **Idvocaliser** as random effect throw some warning messages. The reason is likely that there many levels for the random effect compared to the total number of observations.
+
+Total number of observations:
+```{r}
+nrow(df)
+```
+
+Number of different values for **Idvocaliser**:
+```{r}
+df %>% select(Idvocaliser) %>% unique() %>% nrow()
+```
+
+## Significance of the contributions of **Context** and **Language**
+
+Do we have a significant overall effect of **Context**? And what about **Language**?
+
+For the overall effet of **Language**, we can just conduct an ANOVA between model.0 and model.4, since the former is nested in the latter, with **Language** being the additional predictor in model.4:
+```{r}
+anova(model.0, model.4,test = "Chisq")
+```
+We find a significant overall effect of **Language**.
+
+For **Context**, we need to define an additional model with **Language** as the sole predictor, then perform an anova between this model and model.4:
+```{r}
+model.lg <- mblogit(ASJP ~ Language, data = df)
+anova(model.lg, model.4,test = "Chisq")
+```
+We find a strongly significant overall effect of **Context**.
+These overall effects suggest to further conduct post-hoc tests to assess pair differences (difference between Context, and between Language).
+
+## Results with the best model
+
+We conduct a range of pairwise comparisons below. To adjust the *p*-values in the case of multiple tests, we rely on a multivariate *t* distribution (adjust = "mvt") with the same covariance structure as the estimates, as it is the closest to an exact adjustment (see https://cran.r-project.org/web/packages/emmeans/vignettes/confidence-intervals.html).
+
+### Influence of Context
+
+Plotting the results:
+```{r fig.width = 8.125, fig.height = 3}
+get_model_data(model.4, type = "emm", terms = "Context") %>%
+  as_tibble() %>%
+  mutate(Context = if_else(x == 1, "Disgust", if_else(x == 2, "Joy", "Pain")),
+         Context = as.factor(Context)) %>%
+  rename(Vowel = response.level) %>%
+  mutate(Context = fct_relevel(Context, c("Pain", "Disgust", "Joy")),
+         Vowel = fct_relevel(Vowel, c("a", "e", "E", "ɜ", "i", "o", "u"))) %>%
+  ggplot(aes(x = Context, y = predicted, color = Context)) +
+  geom_linerange(aes(ymin = conf.low, ymax = conf.high, color = Context), linewidth = .5) +
+  geom_point(size = 2) +
+  scale_color_manual(values = emotion_colors) +
+  guides(color = FALSE) +
+  labs(x = "Context", y = "Probability", title = "Probability of occurrence of vowels in different contexts") +
+  facet_grid(. ~ Vowel) +
+  theme_minimal() +
+  theme(axis.text = element_text(size = 7),
+        axis.title = element_text(size = 8),
+        plot.title = element_text(size = 9, margin = margin(b = 8), face = "bold"),
+        legend.text = element_text(size = 5),
+        legend.title = element_text(size = 6),
+        axis.title.x = element_text(margin = margin(t = 10), face = "bold"),
+        axis.title.y = element_text(margin = margin(r = 10), face = "bold"))
+```
+
+
+Another representation:
+```{r fig.width = 8.125, fig.height = 3}
+get_model_data(model.4, type = "emm", terms = "Context") %>%
+  as_tibble() %>%
+  mutate(Context = if_else(x == 1, "Disgust", if_else(x == 2, "Joy", "Pain")),
+         Context = as.factor(Context)) %>%
+  rename(Vowel = response.level) %>%
+  mutate(Context = fct_relevel(Context, c("Pain", "Disgust", "Joy")),
+         Vowel = fct_relevel(Vowel, c("a", "e", "E", "ɜ", "i", "o", "u"))) %>%
+  ggplot(aes(x = Vowel, y = predicted, color = Context)) +
+  geom_linerange(aes(ymin = conf.low, ymax = conf.high, color = Context), linewidth = .5) +
+  geom_point(size = 2) +
+  scale_color_manual(values = emotion_colors) +
+  guides(color = FALSE) +
+  labs(x = "Vowel", y = "Probability", title = "Probability of occurrence of vowels in different contexts") +
+  facet_grid(. ~ Context) +
+  theme_minimal() +
+  theme(axis.text = element_text(size = 7),
+        axis.title = element_text(size = 8),
+        plot.title = element_text(size = 9, margin = margin(b = 8), face = "bold"),
+        legend.text = element_text(size = 5),
+        legend.title = element_text(size = 6),
+        axis.title.x = element_text(margin = margin(t = 10), face = "bold"),
+        axis.title.y = element_text(margin = margin(r = 10), face = "bold"))
+```
+
+Assessments of estimated marginal means and pairwise differences:
+
+First, with contrasts of emotions for each vowel:
+```{r}
+summary(emmeans(model.4, pairwise ~ Context | ASJP, adjust = "mvt"), infer = c(TRUE, TRUE), null = 0)
+```
+
+Second, with contrasts of vowels for each emotion:
+```{r}
+summary(emmeans(model.4, pairwise ~ ASJP | Context, adjust = "mvt"), infer = c(TRUE, TRUE), null = 0)
+```
+
+We can conclude in particular that the participants produced significantly more /ɜ/ in the 'Disgust' context. /a/ was also significantly more produced than all other vowels but /o/ in the 'Pain' context, while /o/ was significantly more produced than /e/, /E/, /i/, and /u/.
+
+### Influence of Language
+
+Plotting the results:
+```{r fig.width = 8.125, fig.height = 3}
+get_model_data(model.4, type = "emm", terms = "Language") %>%
+  as_tibble() %>%
+  rename(Vowel = response.level) %>%
+  mutate(Language = if_else(x == 1, "CN", if_else(x == 2, "EN", if_else(x == 3, "ES", if_else(x == 4, "JP", "TUR")))),
+         Language = as.factor(Language),
+         Vowel = fct_relevel(Vowel, c("a", "e", "E", "ɜ", "i", "o", "u"))) %>%
+  ggplot(aes(x = Language, y = predicted)) +
+  geom_linerange(aes(ymin = conf.low, ymax = conf.high), linewidth = .5, color = "black") +
+  geom_point(size = 2, color = "black") +
+  labs(x = "Language", y = "Probability", title = "Probability of occurrence of vowels in different languages") +
+  facet_grid(. ~ Vowel) +
+  theme_minimal() +
+  theme(axis.text = element_text(size = 7),
+        axis.title = element_text(size = 8),
+        plot.title = element_text(size = 9, margin = margin(b = 8), face = "bold"),
+        legend.text = element_text(size = 5),
+        legend.title = element_text(size = 6),
+        axis.title.x = element_text(margin = margin(t = 10), face = "bold"),
+        axis.title.y = element_text(margin = margin(r = 10), face = "bold"))
+```
+
+Another representation:
+```{r fig.width = 8.125, fig.height = 3}
+get_model_data(model.4, type = "emm", terms = "Language") %>%
+  as_tibble() %>%
+  rename(Vowel = response.level) %>%
+  mutate(Language = if_else(x == 1, "CN", if_else(x == 2, "EN", if_else(x == 3, "ES", if_else(x == 4, "JP", "TUR")))),
+         Language = as.factor(Language),
+         Vowel = fct_relevel(Vowel, c("a", "e", "E", "ɜ", "i", "o", "u"))) %>%
+  ggplot(aes(x = Vowel, y = predicted)) +
+  geom_linerange(aes(ymin = conf.low, ymax = conf.high), linewidth = .5, color = "black") +
+  geom_point(size = 2, color = "black") +
+  labs(x = "Vowel", y = "Probability", title = "Probability of occurrence of vowels in different languages") +
+  facet_grid(. ~ Language) +
+  theme_minimal() +
+  theme(axis.text = element_text(size = 7),
+        axis.title = element_text(size = 8),
+        plot.title = element_text(size = 9, margin = margin(b = 8), face = "bold"),
+        legend.text = element_text(size = 5),
+        legend.title = element_text(size = 6),
+        axis.title.x = element_text(margin = margin(t = 10), face = "bold"),
+        axis.title.y = element_text(margin = margin(r = 10), face = "bold"))
+```
+
+Assessments of estimated marginal means and pairwise differences:
+
+First, with contrasts of languages for each vowel:
+```{r}
+summary(emmeans(model.4, pairwise ~ Language | ASJP, adjust = "mvt"), infer = c(TRUE, TRUE), null = 0)
+```
+
+Second, with contrasts of vowels for each language:
+```{r}
+summary(emmeans(model.4, pairwise ~ ASJP | Language, adjust = "mvt"), infer = c(TRUE, TRUE), null = 0)
+```
+
+We observe that /E/ is produced significantly more by Japanese.
+
+## A model with an interaction between **Language** and **Context**
+
+We have 5 languages and 3 contexts, which means the interaction corresponds to 15 configurations. For a given baseline, that means 14 contrasts. If we rely on the rule of thumb that around 15 observations are needed for each fixed predictor in a regression model, we need 14x15=210 observations to assess an interaction between **Context** and **Language**
+
+We run the corresponding model
+```{r}
+model.inter <- mblogit(ASJP ~ Context * Language, data = df)
+```
+
+We don't meet any convergence issue.
+
+Do we get a significantly better fit to the data with the additional interaction term?
+To answer this question, we can compute an anova between our new model and our former best model:
+```{r}
+anova(model.4, model.inter, test = "Chisq")
+```
+
+Yes, the interaction term is significant.
+
+We extract the estimated marginal means we want:
+```{r}
+emm <- emmeans(model.inter, specs = pairwise ~ Context * Language | ASJP, type = "link", adjust = "mvt") %>%
+  .$emmeans %>%
+  as_tibble()
+```
+
+We can plot the different configurations:
+```{r fig.width = 8.125, fig.height = 8.125}
+emm %>%
+  mutate(ASJP = fct_relevel(ASJP, c("a", "e", "E", "ɜ", "i", "o", "u")),
+         Context = fct_relevel(Context, c("Pain", "Disgust", "Joy"))) %>%
+  ggplot(aes(x = ASJP, y = prob, color = Context)) +
+  geom_point(size = 2) +
+  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL, color = Context), width = 0.1) +
+  scale_color_manual(values = emotion_colors) +
+  guides(color = FALSE) +
+  labs(x = "Vowel", y = "Probability",
+       title = "Probability of occurrence of vowels in different contexts and for different emotions") +
+  facet_grid(Language ~ Context) +
+  theme_minimal() +
+  theme(axis.text = element_text(size = 7),
+        axis.title = element_text(size = 8),
+        plot.title = element_text(size = 9, margin = margin(b = 8), face = "bold"),
+        legend.text = element_text(size = 5),
+        legend.title = element_text(size = 6),
+        axis.title.x = element_text(margin = margin(t = 10), face = "bold"),
+        axis.title.y = element_text(margin = margin(r = 10), face = "bold"))
+```
+
+Another representation is as follows:
+```{r fig.width = 8.125, fig.height = 4}
+emm %>%
+  mutate(ASJP = fct_relevel(ASJP, c("a", "e", "E", "ɜ", "i", "o", "u")),
+         Context = fct_relevel(Context, c("Pain", "Disgust", "Joy"))) %>%
+  ggplot(aes(x = Context, y = prob, color = Context)) +
+  geom_point(size = 2) +
+  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL, color = Context), width = 0.1) +
+  scale_color_manual(values = emotion_colors) +
+  guides(color = FALSE) +
+  labs(x = "Context", y = "Probability",
+       title = "Probability of occurrence of vowels in different contexts and for different emotions") +
+  facet_grid(Language ~ ASJP) +
+  theme_minimal() +
+  theme(axis.text = element_text(size = 7),
+        axis.title = element_text(size = 8),
+        plot.title = element_text(size = 9, margin = margin(b = 8), face = "bold"),
+        legend.text = element_text(size = 5),
+        legend.title = element_text(size = 6),
+        axis.title.x = element_text(margin = margin(t = 10), face = "bold"),
+        axis.title.y = element_text(margin = margin(r = 10), face = "bold"))
+```
+
+And yet another perspective:
+```{r fig.width = 8.125, fig.height = 4}
+emm %>%
+  mutate(ASJP = fct_relevel(ASJP, c("a", "e", "E", "ɜ", "i", "o", "u")),
+         Context = fct_relevel(Context, c("Pain", "Disgust", "Joy"))) %>%
+  ggplot(aes(x = Language, y = prob, color = Context)) +
+  geom_point(size = 2) +
+  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL, color = Context), width = 0.1) +
+  scale_color_manual(values = emotion_colors) +
+  guides(color = FALSE) +
+  labs(x = "Language", y = "Probability",
+       title = "Probability of occurrence of vowels in different contexts and for different emotions") +
+  facet_grid(Context ~ ASJP) +
+  theme_minimal() +
+  theme(axis.text = element_text(size = 7),
+        axis.title = element_text(size = 8),
+        plot.title = element_text(size = 9, margin = margin(b = 8), face = "bold"),
+        legend.text = element_text(size = 5),
+        legend.title = element_text(size = 6),
+        axis.title.x = element_text(margin = margin(t = 10), face = "bold"),
+        axis.title.y = element_text(margin = margin(r = 10), face = "bold"))
+```
+
+Similarly, we can assess pairwise significant differences in multiple ways.
+
+A first perspective:
+```{r}
+summary(emmeans(model.inter, pairwise ~ Language * Context | ASJP, adjust = "mvt"), infer = c(TRUE, TRUE), null = 0)
+```
+
+A second perspective:
+```{r}
+summary(emmeans(model.inter, pairwise ~ ASJP * Context | Language, adjust = "mvt"), infer = c(TRUE, TRUE), null = 0)
+```

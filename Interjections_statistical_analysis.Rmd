@@ -1,0 +1,2635 @@
+---
+title: "Comparative analysis of interjections and non-interjections (distance and content) - `r params$corpus`"
+author: "Anonymous"
+date: 'Last update: `r format(Sys.time(), "%d %B, %Y")`'
+output:
+  html_document:
+    code_download: no
+    code_folding: show
+    highlight: tango
+    number_sections: yes
+    theme: cerulean
+    toc: yes
+    toc_depth: 3
+    toc_float:
+      collapsed: yes
+      smooth_scroll: no
+params:
+  corpus: ASJP
+  dpi: 72
+  precomputed: TRUE
+---
+
+<style>
+h1 {font-size: 24px;}
+h1.title {font-size: 34px;}
+h2 {font-size: 18px;}
+h3 {font-size: 16px;}
+h3.subtitle {font-size: 24px}
+h4 {font-size: 14px;}
+h4.author {font-size: 20px}
+h5 {font-size: 13px;}
+h6 {font-size: 12px;}
+caption, .caption {
+color: #555555;
+font-weight: bold;
+font-size: 110%;
+text-align: left}
+blockquote{color: #317EAC;
+padding:10px 10px;
+font-size:100%;
+margin:0 0 10px;
+border-left:7px solid #317EAC}
+</style>
+
+***
+
+# Preparatory steps for the Markdown file
+
+Loading libraries:
+```{r loading_libraries}
+library(tidyverse) # Data table manipulation and more
+library(parallelMap) # Parallelization
+library(stringdist) # To compute the Damereau-Levenshtein distance
+library(rcompanion) # For Glass rank biserial correlation coefficients
+library(lsr) # For Cohen's D
+library(effsize) # Another function for Cohen's D
+library(grid) # For textGrob
+library(gridExtra) # To plot graphics side by side
+library(kableExtra) # To  create nice tables with Markdown
+library(extrafont) # Extra fonts
+```
+
+Defining the number of cores to use for parallel computations:
+```{r}
+n_cores <- parallel::detectCores() - 2
+```
+
+```{r echo = F, eval = F}
+params <- list(corpus = "ASJP", dpi = 75, precomputed = TRUE)
+```
+
+Defining the name of the cache folder
+```{r}
+cache_folder_name <- paste0("D:/R - Cache/Interjections/Revised/", params$corpus, "/", params$dpi, "/")
+figure_folder_name <- paste0("D:/R - Figures/Interjections/Revised/", params$corpus, "/", params$dpi, "/")
+```
+
+Setting the options for *knitr*:
+```{r setup_knitr, echo=T, warning = F}
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE,
+                       comment = NA,
+                       prompt  = FALSE,
+                       cache   = FALSE,
+                       warning = FALSE,
+                       message = FALSE,
+                       fig.align="center",
+                       fig.width = 8.125,
+                       out.width = "100%",
+                       fig.path = figure_folder_name,
+                       dev = c('png', 'tiff'),
+                       dev.args = list(png = list(type = "cairo"), tiff = list(compression = 'lzw')),
+                       dpi = params$dpi,
+                       cache = TRUE,
+                       cache.path = cache_folder_name,
+                       autodep = TRUE)
+options(width = 1000, scipen = 999, knitr.kable.NA = '')
+```
+
+Loading fonts (Windows system):
+```{r}
+loadfonts(device = 'win', quiet = F)
+target_font <- "Liberation Sans Narrow"
+```
+
+Specifying a seed for random number generation, for the sake of reproducibility:
+```{r set_seed}
+set.seed(123)
+```
+
+Defining a 'not in' operator:
+```{r}
+`%!in%` <- compose(`!`, `%in%`)
+```
+
+Defining colors for the emotions:
+```{r}
+emotion_colors = c(PAIN = "#FF0000", DISGUST = "#0000FF", JOY = "#DFAA00")
+```
+
+# Loading and pre-processing the data
+
+## Main corpus
+
+Defining filenames for the sources of data:
+```{r}
+filename_interjections <- paste0(params$corpus, ".intj.csv")
+filename_lexicon <- paste0(params$corpus, ".lexicon.csv")
+```
+
+We load two data tables, one for interjections and one for the rest of the lexicon:
+```{r}
+df_intj <- read.csv(file = filename_interjections, stringsAsFactors = T) %>% as_tibble()
+df_lexicon <- read.csv(file = filename_lexicon,stringsAsFactors = T) %>% as_tibble()
+```
+
+We reorder the emotions for the interjections:
+```{r}
+df_intj <- df_intj %>% mutate(EMOTION = fct_relevel(EMOTION, "PAIN", "DISGUST", "JOY"))
+```
+
+We order the regions:
+```{r}
+df_intj <- df_intj %>% mutate(REGION = fct_relevel(REGION, "Africa", "Asia", "Europe", "Latin America", "Australia"))
+df_lexicon <- df_lexicon %>% mutate(REGION = fct_relevel(REGION, "Africa", "Asia", "Europe", "Latin America", "Australia"))
+```
+
+## Adding information about language families
+
+Reading the corresponding file and keeping only the needed information
+```{r}
+df_families <- read.csv(file = "glottolog_families.csv", sep = "\t", stringsAsFactors = T) %>%
+  as_tibble() %>%
+  dplyr::select(GLOTTOCODE, FAMILY) %>%
+  unique()
+```
+
+Adding language families for the languages in the data table for interjections
+```{r}
+df_intj <- df_intj %>% left_join(df_families)
+```
+
+Adding language families for the languages in the data table for the lexicon
+```{r}
+df_lexicon <- df_lexicon %>% left_join(df_families)
+```
+
+# Dealing with duplicates
+
+## Interjections
+
+### Content of the data table
+
+First rows of the table:
+```{r}
+df_intj %>%
+  head(n = 20) %>%
+  kable() %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+### Duplicates
+
+We have some redundancy in the table. The initial number of rows is:
+```{r}
+df_intj %>% nrow()
+```
+
+We can identify duplicated lines:
+```{r}
+df_intj %>%
+  group_by(Form, Form_IPA, SegmentCount, GLOTTOCODE, EMOTION, FAMILY, REGION) %>%
+  tally() %>%
+  filter(n > 1) %>%
+  arrange(-n) %>%
+  kable() %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+We get rid of duplicates:
+
+```{r}
+df_intj <- df_intj %>%
+  group_by(Form, Form_IPA, SegmentCount, GLOTTOCODE, EMOTION, FAMILY, REGION) %>%
+  slice_head(n = 1) %>%
+  ungroup()
+```
+
+We can also see that some IPA forms have the same coding when it comes to phonological classes:
+```{r}
+df_intj %>%
+  group_by(Form, GLOTTOCODE, EMOTION) %>%
+  tally() %>%
+  filter(n > 1) %>%
+  arrange(-n) %>%
+  kable() %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+As these are not duplicates, we keep all the observations.
+
+## Lexicon
+
+### Content of the data table
+
+First rows of the table:
+```{r}
+df_lexicon %>%
+  head(n = 20) %>%
+  kable() %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+### Duplicates
+
+The initial number of rows is:
+```{r}
+df_lexicon %>% nrow()
+```
+
+Number of duplicated lines:
+```{r}
+df_lexicon %>%
+  group_by(Form, Form_IPA, SegmentCount, GLOTTOCODE, REGION) %>%
+  tally() %>%
+  filter(n > 1) %>%
+  mutate(n = n - 1) %>%
+  pull(n) %>%
+  sum()
+```
+
+The most significant cases are as follows:
+```{r}
+df_lexicon %>%
+  group_by(Form, Form_IPA, SegmentCount, GLOTTOCODE, REGION) %>%
+  tally() %>%
+  arrange(-n) %>%
+  head(10) %>%
+  kable() %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+We get rid of these duplicates:
+
+```{r}
+df_lexicon <- df_lexicon %>%
+  group_by(Form, Form_IPA, SegmentCount, GLOTTOCODE, REGION) %>%
+  slice_head(n = 1) %>%
+  ungroup()
+```
+
+We can also see that some IPA forms have the same coding when it comes to phonological classes. If we look only at the 10 most significant cases:
+```{r}
+df_lexicon %>%
+  group_by(Form, GLOTTOCODE) %>%
+  tally() %>%
+  arrange(-n) %>%
+  head(n = 10) %>%
+  kable() %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+As these are not duplicates, we keep all the observations.
+
+# Languages with interjections absent from the lexical corpus
+
+Some languages for which we have interjections are not represented in the lexical corpus (we do not need to worry reciprocally about languages in the lexical corpus without interjections, as an earlier pre-selection has been performed). We need to discard these languages and their data.
+
+We extract the languages from our dataset of interjections and our dataset of non-interjections:
+```{r}
+lgs_intj <- df_intj %>% dplyr::select(GLOTTOCODE) %>% unique()
+lgs_lexicon <- df_lexicon %>% dplyr::select(GLOTTOCODE) %>% unique()
+```
+
+Which languages with interjections are not in the lexical corpus?
+```{r}
+lgs_intj %>%
+  anti_join(lgs_lexicon) %>%
+  kable() %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+Number of absent languages:
+```{r}
+lgs_intj %>%
+  anti_join(lgs_lexicon) %>%
+  nrow()
+```
+
+We drop the corresponding entries in the data table of interjections:
+```{r}
+df_intj <- df_intj %>% inner_join(lgs_lexicon)
+```
+
+We now have `r nrow(df_intj)` interjections and `r nrow(df_lexicon)` lexical entries.
+
+# Matching interjections and non-interjections and reducing the datasets
+
+We rename the columns containing the forms in the different data tables for further processing below:
+```{r}
+df_intj <- df_intj %>% rename(Form_intj = Form, Form_IPA_intj = Form_IPA)
+df_lexicon <- df_lexicon %>% rename(Form_lexicon = Form, Form_IPA_lexicon = Form_IPA)
+```
+
+We join the interjection and lexicon tables by **LANG** (and therefore by **REGION** too) and **SegmentCount**, so that we get all the possible pairs between interjections and non-interjections of the same length for a given emotion and language.
+We only keep the additional content-related information for non-interjections:
+```{r}
+df <- df_intj %>%
+full_join(df_lexicon, by = join_by(GLOTTOCODE, FAMILY, REGION, SegmentCount), relationship = "many-to-many")
+```
+
+We lose some interjections, and many non-interjections, in the matching process. There are different explanations:
+* some languages for which we have interjections are not available in ASJP / Lexibank
+* the language exists in the data tables for both interjections and non-interjections, but we don't have non-interjections with the same number of phonemes as the interjections
+
+Extracting unmatched interjections:
+```{r}
+unmatched_interjections <- df %>%
+  filter(is.na(Form_lexicon)) %>%
+  select(Form_intj, Form_IPA_intj, SegmentCount, EMOTION, GLOTTOCODE, FAMILY, REGION) %>%
+  unique()
+```
+
+Number of unmatched interjections:
+```{r}
+unmatched_interjections %>% nrow()
+```
+
+10 examples of unmatched interjections:
+```{r}
+unmatched_interjections %>%
+  slice_sample(n = 10) %>%
+  kable() %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+Number of unmatched non-interjections:
+```{r}
+unmatched_non_interjections <- df %>%
+  filter(is.na(Form_intj)) %>%
+  select(Form_lexicon, Form_IPA_lexicon, GLOTTOCODE, FAMILY, REGION) %>%
+  unique()
+
+unmatched_non_interjections %>% nrow()
+```
+
+10 examples of unmatched non-interjections:
+```{r}
+unmatched_non_interjections %>%
+  slice_sample(n = 10) %>%
+  kable() %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+We are thus going to work with reduced sets of interjections and non-interjections:
+```{r}
+df_intj <- df_intj %>%
+  anti_join(unmatched_interjections) %>%
+  rename(Form = Form_intj, Form_IPA = Form_IPA_intj)
+
+df_lexicon <- df_lexicon %>%
+  anti_join(unmatched_non_interjections) %>%
+  rename(Form = Form_lexicon, Form_IPA = Form_IPA_lexicon)
+```
+
+We drop rows with NA in our joined table:
+```{r}
+df <- df %>% filter(! is.na(Form_intj), !is.na(Form_lexicon))
+```
+
+We make sure the emotions and the regions are well ordered:
+```{r}
+df <- df %>% mutate(EMOTION = fct_relevel(EMOTION, "PAIN", "DISGUST", "JOY"))
+df <- df %>% mutate(REGION = fct_relevel(REGION, "Africa", "Asia", "Europe", "Latin America", "Australia"))
+```
+
+We now have `r nrow(df_intj)` interjections and `r nrow(df_lexicon)` lexical entries.
+
+# Inspecting and visualizing the data
+
+## Summaries and tallies
+
+### General
+
+Number of different languages:
+```{r}
+df_intj %>%
+  pull(GLOTTOCODE) %>%
+  unique() %>%
+  length()
+```
+
+There are `r nrow(df_intj)` interjections, which are divided as follows for the three emotions:
+```{r}
+df_intj %>%
+  group_by(EMOTION) %>%
+  tally() %>%
+  kable() %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+### Data by language
+
+Number of interjections per language and emotion:
+```{r}
+df_intj %>%
+  group_by(EMOTION, GLOTTOCODE) %>%
+  tally() %>%
+  pivot_wider(names_from = EMOTION, values_from = n) %>%
+  replace(is.na(.), 0) %>%
+  kable() %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+Number of interjections and non-interjections per language:
+```{r}
+intj_tmp <- df_intj %>%
+  group_by(GLOTTOCODE) %>%
+  tally() %>%
+  rename(`# Interjections` = n)
+
+df_lexicon %>%
+  group_by(GLOTTOCODE) %>%
+  tally() %>%
+  arrange(-n) %>%
+  rename(`# Non-interjections`= n) %>%
+  inner_join(intj_tmp) %>%
+  kable() %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+Information about the distribution of interjections and non-interjections for each language and emotion:
+```{r}
+nb_intj <- df %>%
+  dplyr::select(EMOTION, GLOTTOCODE, Form_intj, Form_IPA_intj) %>%
+  unique() %>%
+  group_by(EMOTION, GLOTTOCODE) %>%
+  tally() %>%
+  rename(nb_intj = n)
+
+distrib_lexicon <- df %>% group_by(EMOTION, GLOTTOCODE, Form_intj, Form_IPA_intj) %>%
+  tally() %>%
+  ungroup() %>%
+  group_by(EMOTION, GLOTTOCODE) %>%
+  summarize(`Min nb of non-intj for an intj` = min(n), `Max nb of non-intj for an intj` = max(n), `Mean nb of non-intj for an intj` = round(mean(n), 3)) %>%
+  left_join(nb_intj) %>%
+  relocate(nb_intj, .after = GLOTTOCODE) %>%
+  rename(`Nb intj`= nb_intj)
+
+
+distrib_lexicon %>%
+  kable() %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+Number of languages with a single interjection for the different emotions:
+```{r}
+distrib_lexicon %>%
+  filter(`Nb intj` == 1) %>%
+  group_by(EMOTION) %>%
+  tally() %>%
+  kable() %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+What are the languages and emotions for which some interjections have only one corresponding non-interjection of the same length?
+```{r}
+distrib_lexicon %>%
+  filter(`Min nb of non-intj for an intj` == 1) %>%
+  kable() %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+What are the languages and emotions for which all the interjections have only one corresponding non-interjection of the same length?
+```{r}
+distrib_lexicon %>%
+  filter(`Max nb of non-intj for an intj` == 1) %>%
+  kable() %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+What are the languages and emotions for which some interjections have only two corresponding non-interjection of the same length?
+```{r}
+distrib_lexicon %>%
+  filter(`Min nb of non-intj for an intj` == 2) %>%
+  kable() %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+What are the languages and emotions for which all interjections have only two corresponding non-interjection of the same length?
+```{r}
+distrib_lexicon %>%
+  filter(`Max nb of non-intj for an intj` == 2) %>%
+  kable() %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+### Data by region
+
+Number of interjections per emotion and region, with totals (World means all languages):
+```{r}
+nb_intj_per_emotion <- 
+  df_intj %>%
+  group_by(EMOTION) %>%
+  tally() %>%
+  rename(World = n) %>%
+  dplyr::select(World) %>%
+  rbind(World = nrow(df_intj))
+
+nb_intj_per_region <- 
+  df_intj %>%
+  group_by(REGION) %>%
+  tally() %>%
+  pivot_wider(names_from = REGION, values_from = n) %>%
+  mutate(EMOTION = "ALL EMOTIONS") %>%
+  relocate(EMOTION)
+
+df_intj %>%
+  group_by(EMOTION, REGION) %>%
+  tally() %>%
+  pivot_wider(names_from = REGION, values_from = n) %>%
+  replace(is.na(.), 0) %>%
+  rbind(nb_intj_per_region) %>%
+  cbind(nb_intj_per_emotion) %>%
+  kable() %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+Number of languages per region:
+```{r}
+df_intj %>%
+  select(GLOTTOCODE, REGION) %>%
+  unique() %>%
+  group_by(REGION) %>%
+  tally() %>%
+  kable() %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+Number of languages per emotion and region:
+```{r}
+df_intj %>%
+  select(GLOTTOCODE, REGION, EMOTION) %>%
+  unique() %>%
+  group_by(REGION, EMOTION) %>%
+  tally() %>%
+  pivot_wider(names_from = REGION, values_from = n) %>%
+  replace(is.na(.), 0) %>%
+  kable() %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+Number of families per emotion and region:
+```{r}
+df_intj %>%
+  select(FAMILY, REGION, EMOTION) %>%
+  unique() %>%
+  group_by(REGION, EMOTION) %>%
+  tally() %>%
+  pivot_wider(names_from = REGION, values_from = n) %>%
+  replace(is.na(.), 0) %>%
+  kable() %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+### Data by Family
+
+Number of families per region:
+```{r}
+df_intj %>% dplyr::select(REGION, FAMILY) %>% unique() %>% group_by(REGION) %>% tally()
+```
+
+Number of languages per family and number of interjections per emotion and family:
+```{r}
+nb_intj_per_family <- 
+  df_intj %>%
+  group_by(FAMILY) %>%
+  tally() %>%
+  rename(`ALL EMOTIONS` = n)
+
+nb_lgs_per_family <- 
+  df_intj %>%
+  select(GLOTTOCODE, FAMILY) %>%
+  unique() %>%
+  group_by(FAMILY) %>%
+  tally() %>%
+  rename(`# LANGUAGES` = n)
+
+df_intj %>%
+  group_by(REGION, EMOTION, FAMILY) %>%
+  tally() %>%
+  pivot_wider(names_from = EMOTION, values_from = n) %>%
+  replace(is.na(.), 0) %>%
+  inner_join(nb_intj_per_family) %>%
+  inner_join(nb_lgs_per_family) %>%
+  relocate(`# LANGUAGES`, .after = FAMILY) %>%
+  kable() %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+## First graphical outputs 
+
+### Distribution of the number of segments for interjections and non-interjections
+
+```{r figh.height = 6}
+p_intj <- df_intj %>%
+  mutate(EMOTION = fct_relevel(EMOTION, c("PAIN", "DISGUST", "JOY", "Lexicon"))) %>%
+  ggplot(aes(x = SegmentCount, y = ..density.., fill = EMOTION)) +
+  geom_histogram(color="black", binwidth = 1) +
+  scale_fill_manual(values = emotion_colors) +
+  labs(x = "Segment count", y = "Density", title = paste0("Interjections - ", params$corpus)) +
+  theme_minimal() +
+  theme(legend.position = c(0.8, 0.8),
+        text = element_text(family=target_font),
+        axis.text = element_text(size = 7),
+        axis.title = element_text(size = 8),
+        plot.title = element_text(size = 9, margin = margin(b = 8), face = "bold"),
+        legend.text = element_text(size = 5),
+        legend.title = element_text(size = 6),
+        axis.title.x = element_text(margin = margin(t = 10), face = "bold"),
+        axis.title.y = element_text(margin = margin(r = 10), face = "bold"))
+
+p_lexicon <- df_lexicon %>%
+  ggplot(aes(x = SegmentCount, y = ..density..)) +
+  geom_histogram(color="black", fill = "grey", binwidth = 1) +
+  labs(x = "Segment count", y = "Density", title = paste0("Lexicon - ", params$corpus)) +
+  theme_minimal() +
+  theme(text = element_text(family=target_font),
+        axis.text = element_text(size = 7),
+        axis.title = element_text(size = 8),
+        plot.title = element_text(size = 9, margin = margin(b = 8), face = "bold"),
+        legend.text = element_text(size = 5),
+        legend.title = element_text(size = 6),
+        axis.title.x = element_text(margin = margin(t = 10), face = "bold"),
+        axis.title.y = element_text(margin = margin(r = 10), face = "bold"))
+
+grid.arrange(p_intj, p_lexicon, ncol=2)
+```
+
+### Average number of segments of lexical forms for different emotions (across language regions or all languages)
+
+```{r}
+df_lexicon %>% mutate(EMOTION = "Lexicon") %>%
+  rbind(df_intj) %>%
+  mutate(EMOTION = fct_relevel(EMOTION, c("PAIN", "DISGUST", "JOY", "Lexicon")),
+         REGION = fct_relevel(REGION, "Africa", "Asia", "Europe", "Latin America", "Australia")) %>%
+  group_by(EMOTION, REGION) %>%
+  summarize(SegmentCount = mean(SegmentCount)) %>%
+  ungroup() %>%
+  ggplot(aes(x = EMOTION, y = SegmentCount, fill = EMOTION)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c(emotion_colors, "grey")) +
+  guides(fill = FALSE) +
+  labs(x = "Emotion in different regions", y = "Segment Count",
+       title = paste0("Average number of segments in different regions and for different emotions - ", params$corpus)) +
+  facet_grid(. ~ REGION) +
+  theme_minimal() +
+  theme(panel.spacing = unit(1.0, "cm", data = NULL), 
+        text = element_text(family=target_font),
+        axis.text.x = element_text(angle = -90, hjust = 0, size = 6),
+        axis.text = element_text(size = 7),
+        plot.title = element_text(size = 8, margin = margin(b = 8), face = "bold"),
+        legend.text = element_text(size = 5),
+        legend.title = element_text(size = 6),
+        axis.title.x = element_text(size = 8, margin = margin(t = 10), face = "bold"),
+        axis.title.y = element_text(size = 7, margin = margin(r = 10), face = "bold"),
+        strip.text.x = element_text(size = 7))
+```
+Lexical forms in Australian languages - interjections and non-interjections alike - are longer than those of languages in other regions.
+
+Another complementary representation:
+```{r}
+df_lexicon %>% mutate(EMOTION = "Lexicon") %>%
+  rbind(df_intj) %>%
+  mutate(EMOTION = fct_relevel(EMOTION, c("PAIN", "DISGUST", "JOY", "Lexicon")),
+         REGION = fct_relevel(REGION, "Africa", "Asia", "Europe", "Latin America", "Australia")) %>%
+  group_by(EMOTION, REGION) %>%
+  summarize(SegmentCount = mean(SegmentCount)) %>%
+  ungroup() %>%
+  ggplot(aes(x = REGION, y = SegmentCount, fill = EMOTION)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c(emotion_colors, "grey")) +
+  guides(fill = FALSE) +
+  labs(x = "Emotion in different regions", y = "Segment Count",
+       title = paste0("Average number of segments in different regions and for different emotions - ", params$corpus)) +
+  facet_grid(. ~ EMOTION) +
+  theme_minimal() +
+  theme(panel.spacing = unit(1.0, "cm", data = NULL), 
+        text = element_text(family=target_font),
+        axis.text.x = element_text(angle = -90, hjust = 0, vjust = 0.4, size = 6),
+        axis.text = element_text(size = 7),
+        plot.title = element_text(size = 8, margin = margin(b = 8), face = "bold"),
+        legend.text = element_text(size = 5),
+        legend.title = element_text(size = 6),
+        axis.title.x = element_text(size = 8, margin = margin(t = 10), face = "bold"),
+        axis.title.y = element_text(size = 7, margin = margin(r = 10), face = "bold"),
+        strip.text.x = element_text(size = 7))
+```
+Lexical forms for joy are longer on average than those of other emotions and than non-interjections.
+
+
+# Analyzing distances between interjections and non-interjections for the different emotions (Analysis - Section I.A.1)
+
+## Rationale
+
+Our first approach consists in comparing, for a given emotion, the average distance between interjections with the average distance between non-interjections to see whether there is a significant difference between them. Given that we are working with phonological sequences, a reasonable distance is the Damerau-Levenshtein distance, which is the minimum cost of operations (insertions, deletions, substitutions or transpositions) required to transform a sequence A into a sequence B (here we assume that all these operations share the same cost of 1). The Damerau-Levenshtein distance differs from the Levenshtein distance by including transpositions (swaps) among the allowable operations.
+
+An a-priori option is to rely on a regression model with the distance as predicted variable and the contrast between interjections and non-interjections as a predictor. Regression models are overall ok with imbalance in the data (although in our case the imbalance is very strong). Given that the distance between two word forms amounts to a number of operations, the distribution is discrete and a Poisson regression is a good first choice. 
+
+Considering all the emotions together with a single model suggests to have three predictors: the interjection/non-interjection (INI) contrast, the emotion and the interaction between the two. Such a model has good properties when it comes to residuals but it predicts only a few percent of the variance of the dependent variable. There is then the risk of missing a confounding effect which, if included in the model, would impact the assessment of significance for the INI contrast. Since intuitively the Damerau-Levenshtein (DL) distance is strongly affected by the number of elements in each sequence, and the maximum possible value is equal to the length of the longer sequence (i.e., the number of phonological elements), one can consider the latter as a predictor. The relationship between this predictor and the distance is nearly linear, and accounting for this leads to explaining around 80% of the variance. The problem is, however, that the distribution of residuals is no longer acceptable. 
+
+We tried different approaches to solve the previous issue, from additional predictors to smoothers, and in particular different probability distributions to model the conditional distribution of the response variable. This proved difficult, and it is hard to trust the outputs of our models given that the assumptions regarding their residuals are not satisfied.
+
+We therefore chose to rely on a different approach based on subsampling to account for imbalance in the data. 
+
+First, for each emotion, the subsampling is performed as follows:
+
+* Each sample contains pairs pairs of interjections and length-matched non-interjections.
+* In each sample...
+  * For each language family in which we have at least one language with at least one pair of interjection/non-interjection, we select one of the languages
+  * We keep 75% of the languages selected
+  * For each language, we randomly select one pair of interjection/non-interjection
+
+This procedure is meant to address a number of issues:
+
+* Languages may share features due to shared inheritance and borrowing. This creates an issue of non-indepence which we want to address to avoid later inflated Type-1 error rates. We chose to rely on language stocks (which we named families) from Glottolog, and for each sample to select only one language from each family (when of course there was at least one language with pairs of interjection/non-interjection for the emotion under consideration). This does not fully address inheritance, since there could be shared inheritance at a higher level than these families, nor does it fully address borrowing, since languages from two different families may be in contact, but this is much better than including all languages in each sample.
+
+* Some language families represented in our dataset only consist of one language. Picking one language in each family means some languages always appear in the sample, which is a bias. To partly mitigate this issue, we chose to keep only 75% of the languages initially selected, so that some languages are not always present in the sample. 
+
+* Some languages have more interjections than others. Given than the interjections in a given language likely share phonemic features, keeping all the interjections for the selected languages would as above lead to non-independence and possibly inflated Type-1 error rates in later tests. To address this problem, we only select one pair of interjection/non-interjection for each selected language
+
+Given that our dataset is small, there is no easy way to tackle its imbalance at different levels. Our approach is imperfect, but is the best one we found when comparing different approaches.
+
+Second, once we have built 1,000 samples of interjections/non-interjections pairs for a target emotion, we consider all the possible pairs between the interjections and compute the average DL distance between them. We also consider all the possible pairs between the non-interjections and compute the average DL distance between them. We thus get two distributions - one of average distances between interjections, and one of average distances between non-interjections 
+
+## Creating random samples of non-interjections matching the interjections in length
+
+We define the number of samples:
+```{r}
+nb_samples <- 1000
+```
+
+We define a function to create a sample according to the procedure introduced above, picking one language per language family (for all language families where this is possible), then one interjection per language then one non-interjection matching the chosen interjection in length:
+```{r}
+create_sample <- function(sample_id, keep_ratio, emotion) {
+
+  df_sample <- df %>% filter(EMOTION == emotion)
+
+  # We get one language per family
+  df_one_lg <- df_sample %>%
+    dplyr::select(GLOTTOCODE, FAMILY) %>%
+    group_by(FAMILY) %>%
+    slice_sample(n = 1) %>%
+    ungroup()
+  
+  # We only keep a proportion of the languages/families
+  df_selected_lg <- df_one_lg %>% slice_sample(prop = keep_ratio)
+
+  df_sample <- df_sample %>% right_join(df_selected_lg, by = join_by(GLOTTOCODE, FAMILY))
+
+  # We now select one interjection per selected language
+  df_one_interj <- df_sample %>%
+    dplyr::select(Form_intj, Form_IPA_intj, GLOTTOCODE) %>%
+    group_by(GLOTTOCODE) %>%
+    slice_sample(n = 1) %>%
+    ungroup()
+  
+  df_sample <- df_sample %>% right_join(df_one_interj, by = join_by(Form_intj, Form_IPA_intj, GLOTTOCODE))
+  
+  # For each interjection, we randomly select one corresponding non-interjection
+  df_sample <- df_sample %>%
+    group_by(Form_intj, Form_IPA_intj, SegmentCount, GLOTTOCODE, AUTOTYP_AREA, FAMILY, REGION, EMOTION) %>%
+    slice_sample(n = 1) %>%
+    ungroup() %>%
+    mutate(Sample = sample_id)
+  
+return (df_sample)
+}
+```
+
+We call the function 'nb_samples' times for each emotion to create as many samples. We parallelize the process to save time:
+```{r eval = !params$precomputed}
+parallelStartSocket(n_cores, load.balancing = T)
+parallelLibrary("dplyr")
+parallelExport(objnames = "df")
+
+samples_pain <- parallelMap(create_sample, sample_id = as.list(1:nb_samples), more.args = list(keep_ratio = 0.75, emotion = "PAIN"))
+samples_disgust <- parallelMap(create_sample, sample_id = as.list(1:nb_samples), more.args = list(keep_ratio = 0.75, emotion = "DISGUST"))
+samples_joy <- parallelMap(create_sample, sample_id = as.list(1:nb_samples), more.args = list(keep_ratio = 0.75, emotion = "JOY"))
+
+parallelStop()
+```
+
+```{r echo = F, eval = params$precomputed}
+filename <- paste0("samples_", params$corpus, ".RData")
+load(file = filename)
+```
+
+## Saving samples for further analyses
+
+We save the samples for later analyses:
+```{r echo = T, eval = !params$precomputed}
+filename <- paste0("samples_", params$corpus, ".RData")
+save(samples_pain, samples_disgust,samples_joy, file = filename)
+```
+
+## Occurrence of the regions in the different samples
+
+In each sample we randomly selected one language per family (and one pair of interjection and non-interjection), before randomly selecting 75% of the drawn languages. Infrequently, just by chance, this selection might exclude one region from the sample. In particular, Europe only has 4 languages and Australia 9. They are therefore more vulnerable than the three other regions which are better represented.
+
+For each emotion, we can compute the number of samples in which each region appears.
+
+For pain:
+```{r}
+samples_pain %>%
+  do.call("rbind", .) %>%
+  group_by(Sample, REGION) %>%
+  tally() %>%
+  ungroup() %>%
+  mutate(REGION = fct_relevel(REGION, "Africa", "Asia", "Europe", "Latin America", "Australia")) %>%
+  group_by(REGION) %>%
+  tally()
+```
+
+For disgust:
+```{r}
+samples_disgust %>%
+  do.call("rbind", .) %>%
+  group_by(Sample, REGION) %>%
+  tally() %>%
+  ungroup() %>%
+  mutate(REGION = fct_relevel(REGION, "Africa", "Asia", "Europe", "Latin America", "Australia")) %>%
+  group_by(REGION) %>%
+  tally()
+```
+
+For joy:
+```{r}
+samples_joy %>%
+  do.call("rbind", .) %>%
+  group_by(Sample, REGION) %>%
+  tally() %>%
+  ungroup() %>%
+  mutate(REGION = fct_relevel(REGION, "Africa", "Asia", "Europe", "Latin America", "Australia")) %>%
+  group_by(REGION) %>%
+  tally()
+```
+We can see that, just by chance, a few samples do not contain languages from Europe and from Australia (we don't have interjections of disgust for Australia, so we don't even see this region in the table for disgust above). This is not a problem, however: interjections and non-interjections come in pairs, and missing a few pairs do not prevent assessing whether there are significant differences between interjections and non-interjections, whether we look at average phonological distances or at the frequencies of occurrence of different vowels (the two main components of our statistical analysis). Missing at maximum 2% of 1,000 samples only has a very marginal effect on downstream computations.
+
+## Compute average distances between interjections and non-interjections in samples
+
+We now define a function to compute the average distance between target lexical forms (i.e., phonological sequences) - either interjections or non-interjections, as indicated by the parameter *extracted_from* - contained in a data table:
+
+```{r}
+get_average_distance_for_emotions <- function(sample_df, sample_id, extracted_form) {
+  
+  df_extract <- sample_df %>%
+    dplyr::select(extracted_form, "EMOTION", "GLOTTOCODE") %>%
+    rename(Form = extracted_form) %>%
+    mutate(Index = 1:nrow(.))
+
+  results <- df_extract %>%
+    inner_join(df_extract, by = join_by(EMOTION), relationship = "many-to-many") %>%
+    filter(Index.x != Index.y) %>%
+    mutate(Distance = stringdist(Form.x, Form.y, method = "dl")) %>%
+    group_by(EMOTION) %>%
+    summarize(AverageDistance = mean(Distance)) %>%
+    mutate(Sample = sample_id)
+  
+  return (results)
+}
+```
+
+
+We call the previous function to compute the average distance between interjections for each sample:
+```{r}
+average_distances_samples_intj_pain <- mapply(get_average_distance_for_emotions, 
+                                              samples_pain, 1:nb_samples,
+                                              MoreArgs = list(extracted_form = "Form_intj"), SIMPLIFY = F)
+
+average_distances_samples_intj_disgust <- mapply(get_average_distance_for_emotions,
+                                                 samples_disgust, 1:nb_samples,
+                                                 MoreArgs = list(extracted_form = "Form_intj"), SIMPLIFY = F)
+
+average_distances_samples_intj_joy <- mapply(get_average_distance_for_emotions,
+                                             samples_joy, 1:nb_samples,
+                                             MoreArgs = list(extracted_form = "Form_intj"), SIMPLIFY = F)
+```
+
+We turn each list of data tables into a single data table. Each sample is identified by a number in the *Sample* column:
+```{r}
+average_distances_samples_intj_pain <- do.call("rbind", average_distances_samples_intj_pain)
+average_distances_samples_intj_disgust <- do.call("rbind", average_distances_samples_intj_disgust)
+average_distances_samples_intj_joy <- do.call("rbind", average_distances_samples_intj_joy)
+```
+
+We merge our data tables for our different emotions:
+```{r}
+average_distances_samples_intj <-
+  rbind(average_distances_samples_intj_pain, average_distances_samples_intj_disgust, average_distances_samples_intj_joy)
+```
+
+The first rows of the table are displayed below:
+```{r}
+average_distances_samples_intj %>%
+  mutate(AverageDistance = round(AverageDistance, 4)) %>%
+  rename(`Average distance`= AverageDistance) %>%
+  head(n = 10) %>%
+  kable() %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+We repeat the same operations to compute the average distance between non-interjections for each sample: 
+```{r}
+average_distances_samples_lexicon_pain <- mapply(get_average_distance_for_emotions,
+                                                 samples_pain, 1:nb_samples,
+                                                 MoreArgs = list(extracted_form = "Form_lexicon"), SIMPLIFY = F)
+
+average_distances_samples_lexicon_disgust <- mapply(get_average_distance_for_emotions,
+                                                    samples_disgust, 1:nb_samples,
+                                                    MoreArgs = list(extracted_form = "Form_lexicon"), SIMPLIFY = F)
+
+average_distances_samples_lexicon_joy <- mapply(get_average_distance_for_emotions,
+                                                samples_joy, 1:nb_samples,
+                                                MoreArgs = list(extracted_form = "Form_lexicon"), SIMPLIFY = F)
+```
+
+```{r}
+average_distances_samples_lexicon_pain <- do.call("rbind", average_distances_samples_lexicon_pain)
+average_distances_samples_lexicon_disgust <- do.call("rbind", average_distances_samples_lexicon_disgust)
+average_distances_samples_lexicon_joy <- do.call("rbind", average_distances_samples_lexicon_joy)
+```
+
+
+```{r}
+average_distances_samples_lexicon <- 
+  rbind(average_distances_samples_lexicon_pain, average_distances_samples_lexicon_disgust, average_distances_samples_lexicon_joy)
+```
+
+```{r}
+average_distances_samples_lexicon %>%
+  mutate(AverageDistance = round(AverageDistance, 4)) %>%
+  rename(`Average distance`= AverageDistance) %>%
+  head(n = 10) %>%
+  kable() %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+We prepare a single data table to feed the ggplot function in the next section:
+```{r}
+average_distances_samples_lexicon <- average_distances_samples_lexicon %>% mutate(SET = "Lexicon")
+average_distances_samples_intj <- average_distances_samples_intj %>% mutate(SET = "Intj")
+
+average_distances_samples <- rbind(average_distances_samples_lexicon, average_distances_samples_intj) %>%
+  mutate(SET = as.factor(SET))
+```
+
+## Average distance between interjections and between non-interjections
+
+Average distances across samples for different emotions and our two sets of interjections and non-interjections:
+```{r}
+average_distances_samples %>%
+  group_by(EMOTION, SET) %>%
+  summarize(AverageDistance = mean(AverageDistance)) %>%
+  kable() %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+## Displaying the distributions of average distances between interjections and between non-interjections
+
+For each emotion, we can draw the distribution of average distances between interjections and the distribution of average distances between non-interjections.
+
+```{r fig.width=ggplot2::unit(7,"cm"), fig.height=ggplot2::unit(2,"cm")}
+p1 <- average_distances_samples %>%
+  filter(EMOTION == "PAIN") %>%
+  ggplot(aes(x = AverageDistance, y = ..density.., fill = SET)) +
+  geom_histogram(position = "identity", color = "black", alpha = 0.4) +
+  geom_density(alpha = 0.4) +
+  scale_fill_manual(values = c(Intj = "#FF0000", Lexicon = "grey")) +
+  scale_x_continuous(breaks = seq(0, 100, by = 0.5)) +
+  labs(x = "Damerau-Levenshtein distance", y = "", title = "PAIN") +
+  theme(panel.spacing = unit(1.0, "cm", data = NULL),
+        text = element_text(family=target_font),
+        axis.text.x = element_text(size = 6),
+        axis.text = element_text(size = 7),
+        plot.title = element_text(size = 9, margin = margin(b = 8), face= "bold"),
+        legend.text = element_text(size = 5),
+        legend.title = element_text(size = 6),
+        axis.title.x = element_text(size = 8, margin = margin(t = 10), face = "bold"),
+        axis.title.y = element_text(size = 7, margin = margin(r = 10), face = "bold"),
+        strip.text.x = element_text(size = 7))
+
+p2 <- average_distances_samples %>%
+  filter(EMOTION == "DISGUST") %>%
+  ggplot(aes(x = AverageDistance, y = ..density.., fill = SET)) +
+  geom_histogram(position = "identity", color = "black", alpha = 0.4) +
+  geom_density(alpha = 0.4) +
+  scale_fill_manual(values = c(Intj = "#0000FF", Lexicon = "grey")) +
+  scale_x_continuous(breaks = seq(0, 100, by = 0.5)) +
+  labs(x = "Damerau-Levenshtein distance", y = "", title = "DISGUST") +
+  theme(panel.spacing = unit(1.0, "cm", data = NULL),
+        text = element_text(family=target_font),
+        axis.text.x = element_text(size = 6),
+        axis.text = element_text(size = 7),
+        plot.title = element_text(size = 9, margin = margin(b = 8), face= "bold"),
+        legend.text = element_text(size = 5),
+        legend.title = element_text(size = 6),
+        axis.title.x = element_text(size = 8, margin = margin(t = 10), face = "bold"),
+        axis.title.y = element_text(size = 7, margin = margin(r = 10), face = "bold"),
+        strip.text.x = element_text(size = 7))
+
+p3 <- average_distances_samples %>%
+  filter(EMOTION == "JOY") %>%
+  ggplot(aes(x = AverageDistance, y = ..density.., fill = SET)) +
+  geom_histogram(position = "identity", color = "black", alpha = 0.4) +
+  geom_density(alpha = 0.4) +
+  scale_fill_manual(values = c(Intj = "#DFAA00", Lexicon = "grey")) +
+  scale_x_continuous(breaks = seq(0, 100, by = 0.5)) +
+  labs(x = "Damerau-Levenshtein distance", y = "", title = "JOY") +
+  theme(panel.spacing = unit(1.0, "cm", data = NULL),
+        text = element_text(family=target_font),
+        axis.text.x = element_text(size = 6),
+        axis.text = element_text(size = 7),
+        plot.title = element_text(size = 9, margin = margin(b = 8), face= "bold"),
+        legend.text = element_text(size = 5),
+        legend.title = element_text(size = 6),
+        axis.title.x = element_text(size = 8, margin = margin(t = 10), face = "bold"),
+        axis.title.y = element_text(size = 7, margin = margin(r = 10), face = "bold"),
+        strip.text.x = element_text(size = 7))
+
+grid.arrange(p1, p2, p3, ncol = 3, top=textGrob(paste0("Distribution of distances - ", params$corpus)))
+
+```
+
+These figures give an interesting perspective on the differences between interjections and non-interjections. The situation seems quite clear for pain - interjections are closer to each other than non-interjections are to each other -, and rather unclear for joy and disgust. It seems that for the latter, interjections are more distant from each other than non-interjections are.
+
+We need, however, to assess whether, for each emotion, the difference between interjections and non-interjections is statistically significant or not.
+
+## Computing empirical *p*-values to assess differences between interjections and non-interjections
+
+It is tempting to apply a *t*-test to assess the difference between the averages of the two distributions for a given emotion - or a non-parametric Mann-Whitney *U* test to assess the difference between the median of these distributions. The issue is, however, that these tests require observations to be independent from each other, and this is not the case given our subsampling procedure.
+
+Consequently, we consider permutation tests to compute empirical $p$-values. This requires to repeat the approach we have taken previously a large number of times, but each time with random permutations of the interjections and non-interjections in the generated samples. More concretely:
+
+* we create 1,000 samples with random permutations in each of them (so that some interjections may actually be non-interjections, and vice-versa). We compute for each sample the average distance between interjections, and the average distance between non-interjections. We thus obtain two distributions, and can compute a *t* test statistic to assess the difference between them
+* We again create 1,000 samples with random permutations, and get a new test statistic
+* We repeat this many times, and thus build a distribution of *t* test statistics which corresponds to the null hypothesis of no difference between the average distance between interjections and the average distance between non-interjections.
+* We can compute how many values in the distribution are more extreme than the test statistic of our target case with no random permutation. This gives us an empirical *p*-value.
+
+The procedure can be said to involve samples of samples, but while this adds a layer of complexity, it makes sense to get the *p*-values we want.
+
+We define a function to randomly permute pairs of interjection and non-interjection in a sample:
+```{r}
+shuffle_sample <- function(df_sample) {
+  df_sample <- df_sample %>%
+    mutate(x = runif(nrow(.))) %>%
+    mutate(Form_intj = as.character(Form_intj),
+           Form_lexicon = as.character(Form_lexicon),
+           new_Form_intj = if_else(x > 0.5, Form_intj, Form_lexicon),
+           new_Form_lexicon =  if_else(x > 0.5, Form_lexicon, Form_intj),
+           Form_intj = new_Form_intj,
+           Form_lexicon = new_Form_lexicon) %>%
+    dplyr::select(-new_Form_intj, -new_Form_lexicon) %>%
+    mutate(Form_IPA_intj = as.character(Form_IPA_intj), # We repeat the same approach with IPA forms
+           Form_IPA_lexicon = as.character(Form_IPA_lexicon),
+           new_Form_IPA_intj = if_else(x > 0.5, Form_IPA_intj, Form_IPA_lexicon),
+           new_Form_IPA_lexicon =  if_else(x > 0.5, Form_IPA_lexicon, Form_IPA_intj),
+           Form_IPA_intj = new_Form_IPA_intj,
+           Form_IPA_lexicon = new_Form_IPA_lexicon) %>%
+    dplyr::select(-new_Form_IPA_intj, -new_Form_IPA_lexicon) %>%
+    dplyr::select(-x)
+
+  return (df_sample)
+}
+```
+
+We finally define a function to get the *t* test statistic for nb_samples of pairs of interjections and non-interjections with random permutations:
+```{r}
+get_t <- function(iteration, emotion, nb_samples, keep_ratio) {
+  
+  samples <- lapply(1:nb_samples, create_sample, keep_ratio, emotion)
+  samples <- lapply(samples, shuffle_sample)
+
+  average_dist_intj <- mapply(get_average_distance_for_emotions, samples, 1:nb_samples, MoreArgs = list(extracted_form = "Form_intj"), SIMPLIFY = F)
+  average_dist_lexicon <- mapply(get_average_distance_for_emotions, samples, 1:nb_samples, MoreArgs = list(extracted_form = "Form_lexicon"), SIMPLIFY = F)
+
+  average_dist_intj <- do.call("rbind", average_dist_intj)
+  average_dist_lexicon <- do.call("rbind", average_dist_lexicon)
+
+  t <- 
+    t.test(
+      average_dist_intj %>% pull(AverageDistance),
+      average_dist_lexicon %>% pull(AverageDistance),
+      paired = T)$statistic %>%
+    unname()
+
+  return (t)  
+}
+```
+
+We define how many test statistics we want in our distribution:
+```{r}
+nb_samples_permutation_test <- 1000
+```
+
+We call the *get_test_statistics()* function *nb_samples_permutation_test* times for each emotion. We parallelize the process to save time:
+```{r eval = !params$precomputed}
+parallelStartSocket(n_cores, load.balancing = T)
+parallelLibrary("dplyr", "stringdist")
+parallelExport(objnames = c("df", "create_sample", "shuffle_sample", "nb_samples", "get_average_distance_for_emotions"))
+
+ts_pain <- parallelMap(get_t, iteration = as.list(1:nb_samples_permutation_test), more.args = list(emotion = "PAIN", nb_samples = nb_samples, keep_ratio = 0.75)) %>% unlist()
+
+ts_disgust <- parallelMap(get_t, iteration = as.list(1:nb_samples_permutation_test), more.args = list(emotion = "DISGUST", nb_samples = nb_samples, keep_ratio = 0.75))
+
+ts_joy <- parallelMap(get_t, iteration = as.list(1:nb_samples_permutation_test), more.args = list(emotion = "JOY", nb_samples = nb_samples, keep_ratio = 0.75))
+
+parallelStop()
+```
+
+```{r echo = F, eval = !params$precomputed}
+filename <- paste0("computations_distances_", params$corpus, ".RData")
+save(ts_pain, ts_disgust, ts_joy, file = filename)
+```
+
+```{r echo = F, eval = params$precomputed}
+filename <- paste0("computations_distances_", params$corpus, ".RData")
+load(file = filename)
+```
+
+
+We compute the test statistics for our target distributions without random permutations:
+```{r}
+target_t_pain <- 
+  t.test(
+    average_distances_samples_intj_pain %>% pull(AverageDistance),
+    average_distances_samples_lexicon_pain %>% pull(AverageDistance),
+    paired = T)$statistic %>%
+  unname()
+
+target_t_disgust <- 
+  t.test(
+    average_distances_samples_intj_disgust %>% pull(AverageDistance),
+    average_distances_samples_lexicon_disgust %>% pull(AverageDistance),
+    paired = T)$statistic %>%
+  unname()
+
+target_t_joy <- 
+  t.test(
+    average_distances_samples_intj_joy %>% pull(AverageDistance),
+    average_distances_samples_lexicon_joy %>% pull(AverageDistance),
+    paired = T)$statistic %>%
+  unname()
+```
+
+We compute the *p*-values:
+```{r}
+p_pain <- ifelse(target_t_pain < 0, as.numeric(ts_pain < target_t_pain), as.numeric(ts_pain > target_t_pain))
+p_pain <- p_pain / nb_samples_permutation_test
+
+p_disgust <- ifelse(target_t_disgust < 0, as.numeric(ts_disgust < target_t_disgust), as.numeric(ts_disgust > target_t_disgust))
+p_disgust <- p_disgust / nb_samples_permutation_test
+
+p_joy <- ifelse(target_t_joy < 0, as.numeric(ts_joy < target_t_joy), as.numeric(ts_joy > target_t_joy))
+p_joy <- p_joy / nb_samples_permutation_test
+```
+
+We can further compute effect sizes with Cohen's D since the distributions are close to normal and close to homoscedasticity, and we also compute the difference between the average values of these two distribution:
+```{r}
+cohensD_pain <- cohensD(
+  average_distances_samples_intj_pain %>% pull(AverageDistance),
+    average_distances_samples_lexicon_pain %>% pull(AverageDistance)
+)
+
+cohensD_disgust <- cohensD(
+  average_distances_samples_intj_disgust %>% pull(AverageDistance),
+  average_distances_samples_lexicon_disgust %>% pull(AverageDistance)
+)
+
+cohensD_joy <- cohensD(
+  average_distances_samples_intj_joy %>% pull(AverageDistance),
+  average_distances_samples_lexicon_joy %>% pull(AverageDistance)
+)
+
+diff_av_pain <- 
+  average_distances_samples_intj_pain %>% pull(AverageDistance) %>% mean() -
+  average_distances_samples_lexicon_pain %>% pull(AverageDistance) %>% mean()
+
+diff_av_disgust <- 
+  average_distances_samples_intj_disgust %>% pull(AverageDistance) %>% mean() -
+  average_distances_samples_lexicon_disgust %>% pull(AverageDistance) %>% mean()
+
+diff_av_joy <- 
+  average_distances_samples_intj_joy %>% pull(AverageDistance) %>% mean() -
+  average_distances_samples_lexicon_joy %>% pull(AverageDistance) %>% mean()
+```
+
+We display a summary of our findings:
+```{r}
+tibble(Emotion = c("PAIN", "DISGUST", "JOY"),
+       p = c(p_pain, p_disgust, p_joy),
+       RawDiff = c(diff_av_pain, diff_av_disgust, diff_av_joy),
+       EffSize = c(cohensD_pain, cohensD_disgust, cohensD_joy)) %>%
+  mutate(p = format.pval(p, digits = 3, eps = 1 / nb_samples_permutation_test),
+         RawDiff = round(RawDiff, 3),
+         EffSize = round(EffSize, 3)) %>%
+  kable(align = 'rrrr') %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+Since we perform multiple tests, it makes sense to adjust the p-values to control for the family-wise error rate. Even if we adopt the conservative Bonferroni correction and set the threshold of significance to 0.05/3 = 0.0167 (since we have three tests), the differences are still significant.
+
+For Cohen's d, the values car be interpreted as follows:
+
+* 0.01: very small
+* 0.2: small effect
+* 0.5: medium effect
+* 0.8: large effect
+* 1.2: very large
+* 2: huge
+
+We can now go further and look at specific phonemes (or rather, classes of phonemes) and how they appear in interjections and non-interjections.
+
+# Adding information about the content of the lexical forms
+
+For both interjections and (samples of) non-interjections, we are interested in how 7 different vowels (or rather, phoneme classes) - a, i, e, E, 3, o, and u - appear in the lexical forms. We are also interested in so-called 'wide falling diphtongs' - ai, a3, au, ay, aw. For the sake of simplicity, we call all these elements vowels in the remainder of this document.
+
+We define a list of our vowels, with their names, and the corresponding regex and length (so that we can correctly compute their frequency in lexical forms):
+```{r}
+vowels <- list("a" = list("a", 1),
+               "i" = list("i", 1),
+               "e" = list("e", 1),
+               "E" = list("E", 1),
+               "3" = list("3", 1),
+               "o" = list("o", 1),
+               "u" = list("u", 1),
+               "wfd" = list("(ai|a3|au|ay|aw)", 2))
+```
+
+We can assess i) whether these vowels occur or not in a lexical form (true or false), ii how many times they appear in a lexical form (count), and iii) what is their frequency in a lexical form, i.e., what is the percentage of phonemes they amount to (between 0.0 and 1.0).
+
+
+## Preliminary definitions of functions
+
+We create four functions to easily work with our data tables later. We define methods to i) detect a target sequence of phonemes (TRUE/FALSE), ii) count its number of occurrences, iii) compute its frequency in the lexical forms, iv) compute its frequency only with respect to the vowels in the lexical forms:
+
+```{r}
+create_tibble_occurrence <- function (target, forms) {
+  occurrences <- forms %>% str_detect(target[[1]])
+  return (occurrences)
+}
+```
+
+```{r}
+create_tibble_count <- function (target, forms) {
+  return (str_count(forms, target[[1]]))
+}
+```
+
+```{r}
+create_tibble_frequency <- function (target, forms) {
+  segment_nbs <- forms %>% str_count(".")
+  counts <- forms %>% str_count(target[[1]])
+  return (target[[2]] * counts / segment_nbs)
+}
+```
+
+```{r}
+create_tibble_vocalic_frequency <- function (target, forms) {
+  vowel_nbs <- forms %>% str_count("[aieE3ou]")
+  ay_aw_nbs <- forms %>% str_count("(ay|aw)")
+  counts <- forms %>% str_count(target[[1]])
+  denoms <- vowel_nbs + ay_aw_nbs # We add ay_aw_nbs to account for y and w as vowels
+  results <- target[[2]] * counts / denoms
+  results[is.na(results)] <- 0.0
+  return (results)
+}
+```
+
+This function is later used to call the previous functions and generate additional information about the lexical forms (interjections and non-interjections):
+```{r}
+add_content_data <- function(df, targets, data.type = "frequency", prefix = "") {
+  if (! (data.type %in% c("frequency", "occur", "count", "vocalic_frequency")))
+    return (NA)
+
+  forms <- df %>% pull(Form)
+
+  add_df <- switch(data.type,
+    count = lapply(targets, create_tibble_count, forms = forms) %>% bind_cols(),
+    vocalic_frequency = lapply(targets, create_tibble_vocalic_frequency, forms = forms) %>% bind_cols(),
+    frequency = lapply(targets, create_tibble_frequency, forms = forms) %>% bind_cols(),
+    occur = lapply(targets, create_tibble_occurrence, forms = forms) %>% bind_cols()
+  )
+  
+  colnames(add_df) <- paste0(prefix, colnames(add_df))
+  df <- df %>% add_column(add_df)
+  return (df)
+}
+```
+
+Finally, this function is used to compute the vocalic ratio of the forms in the data table:
+```{r}
+add_vocalic_ratio <- function(df) {
+  
+  forms <- df %>% pull(Form)
+  v <- sapply(forms, function (f) { (f %>% str_count("[aieE3ou]")) / (f %>% str_count(".")) }, simplify = T, USE.NAMES = F)
+  df <- df %>% mutate(V_ratio = v)
+  return (df)
+}
+```
+
+## Adding information for interjections and (samples of) non-interjections
+
+For interjections:
+```{r}
+df_intj <- df_intj %>%
+  add_content_data(vowels, "occur", prefix = "Occur_") %>%
+  add_content_data(vowels, "count", prefix = "Count_") %>%
+  add_content_data(vowels, "frequency", prefix = "Freq_") %>%
+  add_content_data(vowels, "vocalic_frequency", prefix = "VFreq_") %>%
+  add_vocalic_ratio()
+```
+
+For non-interjections:
+```{r}
+df_lexicon <- df_lexicon %>%
+  add_content_data(vowels, "occur", prefix = "Occur_") %>%
+  add_content_data(vowels, "count", prefix = "Count_") %>%
+  add_content_data(vowels, "frequency", prefix = "Freq_") %>%
+  add_content_data(vowels, "vocalic_frequency", prefix = "VFreq_") %>%
+  add_vocalic_ratio()
+```
+
+
+# Graphical outputs related to the target vowels
+
+## Average frequencies of individual vowels for different emotions and in non-interjections
+
+```{r fig.width=ggplot2::unit(6,"cm"), fig.height=ggplot2::unit(2,"cm")}
+df_lexicon %>%
+  mutate(EMOTION = "Lexicon") %>%
+  rbind(df_intj) %>%
+  mutate(EMOTION = fct_relevel(EMOTION, c("PAIN", "DISGUST", "JOY", "Lexicon"))) %>%
+  group_by(EMOTION) %>%
+  summarize_at(vars(starts_with("Freq")), mean) %>%
+  pivot_longer(cols = starts_with("Freq"), names_to = "Vowel", values_to = "Frequency") %>%
+  mutate(Vowel = str_extract(Vowel, "(?<=Freq_).+"),
+         Vowel = as.factor(Vowel),
+         Vowel = fct_relevel(Vowel, "a", "e", "E", "3", "i", "o", "u")) %>%
+  ggplot(aes(x = Vowel, y = Frequency, fill = EMOTION)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  scale_fill_manual(values = c(emotion_colors, Lexicon = "grey")) +
+  labs(x = "Vowel", y = "Average frequency",
+       title = paste0("Average frequency of vowels for different emotions - ", params$corpus)) +
+  theme_minimal() +
+  theme(text = element_text(family=target_font),
+        axis.text.x = element_text(size = 7),
+        axis.text.y = element_text(size = 7),
+        plot.title = element_text(size = 8, margin = margin(b = 8), face = "bold"),
+        legend.text = element_text(size = 6),
+        legend.title = element_text(size = 6),
+        axis.title.x = element_text(size = 8, margin = margin(t = 10), face = "bold"),
+        axis.title.y = element_text(size = 7, margin = margin(r = 10), face = "bold"))
+```
+
+
+## Average vocalic frequencies of individual vowels for different emotions and in non-interjections
+
+```{r fig.width=ggplot2::unit(6,"cm"), fig.height=ggplot2::unit(2,"cm")}
+df_lexicon %>%
+  mutate(EMOTION = "Lexicon") %>%
+  rbind(df_intj) %>%
+  mutate(EMOTION = fct_relevel(EMOTION, c("PAIN", "DISGUST", "JOY", "Lexicon"))) %>%
+  group_by(EMOTION) %>%
+  summarize_at(vars(starts_with("VFreq")), mean) %>%
+  pivot_longer(cols = starts_with("VFreq"), names_to = "Vowel", values_to = "Frequency") %>%
+  mutate(Vowel = str_extract(Vowel, "(?<=Freq_).+"),
+         Vowel = as.factor(Vowel),
+         Vowel = fct_relevel(Vowel, "a", "e", "E", "3", "i", "o", "u")) %>%
+  ggplot(aes(x = Vowel, y = Frequency, fill = EMOTION)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  scale_fill_manual(values = c(emotion_colors, Lexicon = "grey")) +
+  labs(x = "Vowel", y = "Average vocalic frequency",
+       title = paste0("Average vocalic frequency of vowels for different emotions - ", params$corpus)) +
+  theme_minimal() +
+  theme(text = element_text(family=target_font),
+        axis.text.x = element_text(size = 7),
+        axis.text.y = element_text(size = 7),
+        plot.title = element_text(size = 8, margin = margin(b = 8), face = "bold"),
+        legend.text = element_text(size = 6),
+        legend.title = element_text(size = 6),
+        axis.title.x = element_text(size = 8, margin = margin(t = 10), face = "bold"),
+        axis.title.y = element_text(size = 7, margin = margin(r = 10), face = "bold"))
+```
+
+## Average vocalic ratio for different emotions and in non-interjections
+
+```{r fig.width=ggplot2::unit(6,"cm"), fig.height=ggplot2::unit(2,"cm")}
+df_lexicon %>%
+  mutate(EMOTION = "Lexicon") %>%
+  rbind(df_intj) %>%
+  mutate(EMOTION = fct_relevel(EMOTION, c("PAIN", "DISGUST", "JOY", "Lexicon"))) %>%
+  group_by(EMOTION) %>%
+  summarize_at(vars(starts_with("V_ratio")), mean) %>%
+  ggplot(aes(x = EMOTION, y = V_ratio, fill = EMOTION)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  scale_fill_manual(values = c(emotion_colors, Lexicon = "grey")) +
+  labs(x = "Emotion", y = "Average vocalic ratio",
+       title = paste0("Average vocalic ratio for different emotions - ", params$corpus)) +
+  theme_minimal() +
+  theme(text = element_text(family=target_font),
+        axis.text.x = element_text(size = 7),
+        axis.text.y = element_text(size = 7),
+        plot.title = element_text(size = 8, margin = margin(b = 8), face = "bold"),
+        legend.text = element_text(size = 6),
+        legend.title = element_text(size = 6),
+        axis.title.x = element_text(size = 8, margin = margin(t = 10), face = "bold"),
+        axis.title.y = element_text(size = 7, margin = margin(r = 10), face = "bold"))
+```
+
+
+## Average frequency of individual vowels across language regions
+
+```{r fig.width = 9}
+df_lexicon %>%
+  mutate(EMOTION = "Lexicon") %>%
+  rbind(df_intj) %>%
+  mutate(EMOTION = fct_relevel(EMOTION, c("PAIN", "DISGUST", "JOY", "Lexicon")),
+         REGION = fct_relevel(REGION, "Africa", "Asia", "Europe", "Latin America", "Australia")) %>%
+  group_by(EMOTION, REGION) %>%
+  summarize_at(vars(starts_with("Freq")), mean) %>%
+  pivot_longer(cols = starts_with("Freq"), names_to = "Vowel", values_to = "Frequency") %>%
+  mutate(Vowel = str_extract(Vowel, "(?<=Freq_).+"),
+         Vowel = as.factor(Vowel),
+         Vowel = fct_relevel(Vowel, "a", "e", "E", "3", "i", "o", "u")) %>%
+  ggplot(aes(x = Vowel, y = Frequency, fill = EMOTION)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c(emotion_colors, "grey")) +
+  guides(fill = FALSE) +
+  labs(x = "Vowel", y = "Average frequency",
+       title = paste0("Average frequency of vowels in different regions - ", params$corpus)) +
+  theme_minimal() +
+  facet_grid(EMOTION ~ REGION) +
+  theme(panel.spacing = unit(1.0, "cm", data = NULL),
+        legend.position = "none",
+        text = element_text(family=target_font),
+        axis.text.x = element_text(size = 6),
+        axis.text.y = element_text(size = 6),
+        plot.title = element_text(size = 8, margin = margin(b = 8), face = "bold"),
+        legend.text = element_text(size = 5),
+        legend.title = element_text(size = 6),
+        axis.title.x = element_text(size = 8, margin = margin(t = 10), face = "bold"),
+        axis.title.y = element_text(size = 7, margin = margin(r = 10), face = "bold"),
+        strip.text.x = element_text(size = 7),
+        strip.text.y = element_text(size = 6))
+```
+
+Another complementary representation:
+```{r fig.width = 9}
+df_lexicon %>%
+  mutate(EMOTION = "Lexicon") %>%
+  rbind(df_intj) %>%
+  mutate(EMOTION = fct_relevel(EMOTION, c("PAIN", "DISGUST", "JOY", "Lexicon")),
+         REGION = fct_relevel(REGION, "Africa", "Asia", "Europe", "Latin America", "Australia")) %>%
+  group_by(EMOTION, REGION) %>%
+  summarize_at(vars(starts_with("Freq")), mean) %>%
+  pivot_longer(cols = starts_with("Freq"), names_to = "Vowel", values_to = "Frequency") %>%
+  mutate(Vowel = str_extract(Vowel, "(?<=Freq_).+"),
+         Vowel = as.factor(Vowel),
+         Vowel = fct_relevel(Vowel, "a", "e", "E", "3", "i", "o", "u")) %>%
+  ggplot(aes(x = REGION, y = Frequency, fill = EMOTION)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c(emotion_colors, "grey")) +
+  guides(fill = FALSE) +
+  labs(x = "Region", y = "Average frequency",
+       title = paste0("Average frequency of vowels in different regions - ", params$corpus)) +
+  facet_grid(EMOTION ~ Vowel) +
+  theme_minimal() +
+  theme(panel.spacing = unit(1.0, "cm", data = NULL),
+        legend.position = "none",
+        text = element_text(family=target_font),
+        axis.text.x = element_text(angle = -90, hjust = 0, vjust = 0.4, size = 6),
+        axis.text.y = element_text(size = 6),
+        plot.title = element_text(size = 8, margin = margin(b = 8), face = "bold"),
+        legend.text = element_text(size = 5),
+        legend.title = element_text(size = 6),
+        axis.title.x = element_text(size = 8, margin = margin(t = 10), face = "bold"),
+        axis.title.y = element_text(size = 7, margin = margin(r = 10), face = "bold"),
+        strip.text.x = element_text(size = 7),
+        strip.text.y = element_text(size = 6))
+```
+
+We see that the vowel (class) E hardly occurs in the interjections, and actually does not occur in the ASJP lexicon at all.
+3 is also quite rare, especially in Australian languages.
+
+## Average frequency of (all) vowels across language regions
+
+```{r}
+df_lexicon %>%
+  mutate(EMOTION = "Lexicon") %>%
+  rbind(df_intj) %>%
+  mutate(EMOTION = fct_relevel(EMOTION, c("PAIN", "DISGUST", "JOY", "Lexicon")),
+         REGION = fct_relevel(REGION, "Africa", "Asia", "Europe", "Latin America", "Australia"),
+         Vowel_frequency = (Count_a + Count_e + Count_3 + Count_i + Count_o + Count_u) / SegmentCount) %>%
+  group_by(EMOTION, REGION) %>%
+  summarize(Frequency = mean(Vowel_frequency)) %>%
+  ggplot(aes(x = REGION, y = Frequency, fill = EMOTION)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  scale_fill_manual(values = c(emotion_colors, Lexicon = "grey")) +
+  labs(x = "Region", y = "Vowel proportion",
+       title = paste0("Vowel proportion (i.e., Average frequency of vowels) for different regions and emotions - ", params$corpus)) +
+  theme_minimal() +
+  theme(panel.spacing = unit(1.0, "cm", data = NULL),
+        text = element_text(family=target_font),
+        axis.text.x = element_text(size = 6),
+        axis.text.y = element_text(size = 6),
+        plot.title = element_text(size = 8, margin = margin(b = 8), face = "bold"),
+        legend.text = element_text(size = 5),
+        legend.title = element_text(size = 6),
+        axis.title.x = element_text(size = 8, margin = margin(t = 10), face = "bold"),
+        axis.title.y = element_text(size = 7, margin = margin(r = 10), face = "bold"),
+        strip.text.x = element_text(size = 7),
+        strip.text.y = element_text(size = 6))
+```
+
+
+## Percentage of languages with individual vowels across language regions
+
+```{r fig.width = 9}
+df_lexicon %>%
+  mutate(EMOTION = "Lexicon") %>%
+  rbind(df_intj) %>%
+  mutate(EMOTION = fct_relevel(EMOTION, c("PAIN", "DISGUST", "JOY", "Lexicon")),
+         REGION = fct_relevel(REGION, "Africa", "Asia", "Europe", "Latin America", "Australia")) %>%
+  group_by(EMOTION, GLOTTOCODE, REGION) %>%
+  summarize_at(vars(starts_with("Occur")), sum) %>%
+  ungroup() %>%
+  mutate_at(vars(starts_with("Occur")), function(n) {as.integer(n>0)}) %>%
+  group_by(EMOTION, REGION) %>%
+  summarize_at(vars(starts_with("Occur")), mean) %>%
+  pivot_longer(cols = starts_with("Occur"), values_to = "Occur", names_to = "Vowel") %>%
+  mutate(Vowel = str_extract(Vowel, "(?<=Occur_).+"),
+         Vowel = as.factor(Vowel),
+         Vowel = fct_relevel(Vowel, "a", "e", "E", "3", "i", "o", "u")) %>%
+  ggplot(aes(x = Vowel, y = Occur, fill = EMOTION)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c(emotion_colors, "grey")) +
+  guides(fill = FALSE) +
+  labs(x = "Vowel", y = "% of languages",
+       title = paste0("Percentage of languages with each vowel in different regions - ", params$corpus)) +
+  facet_grid(EMOTION ~ REGION) +
+  theme_minimal() +
+  theme(panel.spacing = unit(1.0, "cm", data = NULL),
+        legend.position = "none",
+        text = element_text(family=target_font),
+        axis.text.x = element_text(size = 6),
+        axis.text.y = element_text(size = 6),
+        plot.title = element_text(size = 8, margin = margin(b = 8), face = "bold"),
+        legend.text = element_text(size = 5),
+        legend.title = element_text(size = 6),
+        axis.title.x = element_text(size = 8, margin = margin(t = 10), face = "bold"),
+        axis.title.y = element_text(size = 7, margin = margin(r = 10), face = "bold"),
+        strip.text.x = element_text(size = 7),
+        strip.text.y = element_text(size = 6))
+```
+
+Another complementary representation:
+```{r fig.width = 9}
+df_lexicon %>%
+  mutate(EMOTION = "Lexicon") %>%
+  rbind(df_intj) %>%
+  mutate(EMOTION = fct_relevel(EMOTION, c("PAIN", "DISGUST", "JOY", "Lexicon")),
+         REGION = fct_relevel(REGION, "Africa", "Asia", "Europe", "Latin America", "Australia")) %>%
+  group_by(EMOTION, GLOTTOCODE, REGION) %>%
+  summarize_at(vars(starts_with("Occur")), sum) %>%
+  ungroup() %>%
+  mutate_at(vars(starts_with("Occur")), function(n) {as.integer(n>0)}) %>%
+  group_by(EMOTION, REGION) %>%
+  summarize_at(vars(starts_with("Occur")), mean) %>%
+  pivot_longer(cols = starts_with("Occur"), values_to = "Occur", names_to = "Vowel") %>%
+  mutate(Vowel = str_extract(Vowel, "(?<=Occur_).+"),
+         Vowel = as.factor(Vowel),
+         Vowel = fct_relevel(Vowel, "a", "e", "E", "3", "i", "o", "u")) %>%
+  ggplot(aes(x = REGION, y = Occur, fill = EMOTION)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c(emotion_colors, "grey")) +
+  guides(fill = FALSE) +
+  labs(x = "Region", y = "% of languages",
+       title = paste0("% of languages with each vowel in different regions - ", params$corpus)) +
+  facet_grid(EMOTION ~ Vowel) +
+  theme_minimal() +
+  theme(panel.spacing = unit(1.0, "cm", data = NULL),
+        legend.position = "none",
+        text = element_text(family=target_font),
+        axis.text.x = element_text(angle = -90, hjust = 0, vjust = 0.4, size = 5),
+        axis.text.y = element_text(size = 6),
+        plot.title = element_text(size = 8, margin = margin(b = 8), face = "bold"),
+        legend.text = element_text(size = 5),
+        legend.title = element_text(size = 6),
+        axis.title.x = element_text(size = 8, margin = margin(t = 10), face = "bold"),
+        axis.title.y = element_text(size = 7, margin = margin(r = 10), face = "bold"),
+        strip.text.x = element_text(size = 7),
+        strip.text.y = element_text(size = 6))
+```
+
+## Relationship between the count of the vowels and the number of segments of the lexical form
+
+```{r fig.width = 16.25, fig.height = 16.25, warning = F, message = F}
+df_intj_tmp <- df_intj %>% select(-starts_with("Freq"), -starts_with("VFreq"), -starts_with("Occur"), -V_ratio)
+df_lexicon %>%
+  select(-starts_with("Freq"), -starts_with("VFreq"), -starts_with("Occur"), -V_ratio) %>%
+  mutate(EMOTION = "Lexicon") %>%
+  rbind(df_intj_tmp) %>%
+  mutate(EMOTION = fct_relevel(EMOTION, c("PAIN", "DISGUST", "JOY", "Lexicon")),
+         REGION = fct_relevel(REGION, "Africa", "Asia", "Europe", "Latin America", "Australia")) %>%
+  pivot_longer(cols = starts_with("Count"), names_to = "Vowel", values_to = "Count") %>%
+  mutate(Vowel = substr(Vowel, 7, 100),
+         Vowel = fct_relevel(Vowel, "a", "e", "E", "3", "i", "o", "u")) %>%
+  ggplot(aes(x = SegmentCount, y = Count, col = Vowel)) +
+  geom_smooth(method = "loess", formula = y ~ x) +
+  labs(x = "Segment count", y = "Number of occurrences of the vowel",
+       title = paste0("Number of occurrences of a vowel in a word form depending on its length - ", params$corpus)) +
+  facet_grid(REGION ~ EMOTION) +
+  theme(panel.spacing = unit(1.0, "cm", data = NULL),
+        text = element_text(family=target_font),
+        axis.text = element_text(size = 9),
+        plot.title = element_text(size = 10, margin = margin(t = 10, b = 10), face = "bold"),
+        legend.text = element_text(size = 5),
+        legend.title = element_text(size = 6),
+        axis.title.x = element_text(size = 8, margin = margin(t = 10), face = "bold"),
+        axis.title.y = element_text(size = 7, margin = margin(r = 10), face = "bold"),
+        strip.text.x = element_text(size = 7),
+        strip.text.y = element_text(size = 7))
+```
+
+We observe rather linear relationships in the lexicon, although with different slopes for different phonological targets. The situation is messy for interjections due to their limited number.
+
+## Histogram of counts of the different vowels
+
+```{r fig.height = 9}
+df_intj_tmp <- df_intj %>% select(-starts_with("Freq"), -starts_with("VFreq"), -starts_with("Occur"), -V_ratio)
+df_lexicon %>%
+  select(-starts_with("Freq"), -starts_with("VFreq"), -starts_with("Occur"), -V_ratio) %>%
+  mutate(EMOTION = "Lexicon") %>%
+  rbind(df_intj_tmp) %>%
+  mutate(EMOTION = fct_relevel(EMOTION, c("PAIN", "DISGUST", "JOY", "Lexicon")),
+         REGION = fct_relevel(REGION, "Africa", "Asia", "Europe", "Latin America", "Australia")) %>%
+  pivot_longer(cols = starts_with("Count"), names_to = "Vowel", values_to = "Count") %>%
+  mutate(Vowel = substr(Vowel, 7, 100),
+         Vowel = fct_relevel(Vowel, "a", "e", "E", "3", "i", "o", "u")) %>%
+  ggplot(aes_string(x = "Count", y = "..density..", fill = "EMOTION")) +
+  geom_histogram(binwidth = 1) +
+  scale_fill_manual(values = c(emotion_colors, "grey")) +
+  scale_x_continuous(breaks = 0:5) +
+  guides(fill = FALSE) +
+  labs(x = "Count of occurrences of the vowel", y = "Density",
+       title = paste0("Distribution of the counts of different vowels for different emotions - ", params$corpus)) +
+  theme_minimal() +
+  facet_grid(Vowel ~ EMOTION, scales = "free_x") +
+  theme(panel.spacing = unit(1.0, "cm", data = NULL),
+        legend.position = "none",
+        text = element_text(family=target_font),
+        axis.text.x = element_text(size = 6),
+        axis.text.y = element_text(size = 6),
+        plot.title = element_text(size = 8, margin = margin(b = 8), face = "bold"),
+        legend.text = element_text(size = 5),
+        legend.title = element_text(size = 6),
+        axis.title.x = element_text(size = 8, margin = margin(t = 10), face = "bold"),
+        axis.title.y = element_text(size = 7, margin = margin(r = 10), face = "bold"),
+        strip.text.x = element_text(size = 7),
+        strip.text.y = element_text(size = 6))
+```
+
+For each vowel, we find many words in which it doesn't appear. We can suggest that these distributions are all zero-inflated Poisson distribution, i.e., a mixture of two distributions with the first one generating 0s, and the second generating counts (some of which being possibly 0s)
+
+
+# Dropping E from the list of phonological targets
+
+Given that E occurs rarely in our data, it is best to discard it before going further
+```{r}
+vowels["E"] <- NULL
+df_intj <- df_intj %>% select(-Freq_E, -VFreq_E, -Occur_E, -Count_E)
+df_lexicon <- df_lexicon %>% select(-Freq_E, -VFreq_E, -Occur_E, -Count_E)
+```
+
+# Analysing the frequency of target vowels in interjections and (samples of) non interjections (Analysis - Section I.B.2)
+
+How do interjections and non-interjections compare when it comes to how frequently (ASJP) vowels like /i/ or /a/ occur in the lexical forms?
+
+To answer to this question, we may consider the same two approaches we have discussed previously for DL distances: we may first consider regression models predicting for instance the number of occurrences of a phoneme / phonological class in a form, with as predictors the length of this form, whether it is an interjection or not, and possibly other variables such as the region (+ random effects etc.). We may also adopt a non-parametric / non-regression approach, and use the same samples of matching non-interjections we have previously designed to build distributions of counts/frequencies of target phonological elements, and compute empirical values. While we have experimented with the two options, we report here the latter, which is simpler, rather elegant, and well-aligned with our previous approach to distances.
+
+## Preparing the data
+
+We assemble our samples in a single table:
+```{r}
+samples_pain <- do.call("rbind", samples_pain)
+samples_disgust <- do.call("rbind", samples_disgust)
+samples_joy <- do.call("rbind", samples_joy)
+
+samples <- rbind(samples_pain, samples_disgust, samples_joy)
+```
+
+We turn **GLOTTOCODE**, **REGION**, **EMOTION** and **rep** into factors:
+```{r}
+samples <- samples %>%
+  dplyr::select(-AUTOTYP_AREA, -FAMILY, -SegmentCount) %>%
+  mutate_at(c("GLOTTOCODE", "REGION", "EMOTION", "Sample"), as.factor)
+```
+
+We drop information about interjections in the table, and add information about our phonological elements of interest. We focus on frequencies rather than on counts or presence/absence because i) we have more information with counts or frequencies than with presence/absence and ii) frequencies account for word length, while counts don't.
+```{r}
+samples_lexicon <- samples %>%
+  select(-Form_intj, -Form_IPA_intj) %>%
+  rename(Form = Form_lexicon, Form_IPA = Form_IPA_lexicon) %>% 
+  add_content_data(vowels, "frequency", prefix = "Freq_") %>%
+  mutate(SET = "Lexicon") %>%
+  dplyr::select(-Form, -Form_IPA)
+```
+
+```{r}
+samples_intj <- samples %>%
+  select(-Form_lexicon, -Form_IPA_lexicon) %>%
+  rename(Form = Form_intj, Form_IPA = Form_IPA_intj) %>% 
+  add_content_data(vowels, "frequency", prefix = "Freq_") %>%
+  mutate(SET = "Intj") %>%
+  dplyr::select(-Form, -Form_IPA)
+```
+
+```{r}
+samples <- rbind(samples_intj, samples_lexicon) %>%
+  mutate(SET = as.factor(SET))
+```
+
+For each emotion, and for both interjections and non-interjections, we compute average frequencies both across all languages and across languages for the different language regions.
+
+Across all languages, for interjections:
+```{r}
+average_intj <- df_intj %>%
+ group_by(EMOTION) %>%
+ summarize_at(vars(matches("^Freq")), mean)
+```
+
+Across languages for different language regions, for interjections:
+```{r}
+average_intj_regions <- df_intj %>%
+ group_by(EMOTION, REGION) %>%
+ summarize_at(vars(matches("^Freq")), mean)
+```
+
+Across all languages, for samples of non-interjections:
+```{r}
+average_samples <- samples %>%
+  group_by(EMOTION, Sample, SET) %>%
+  summarize_at(vars(matches("Freq")), mean) %>%
+  ungroup()
+```
+
+Across languages for different language regions, for samples of non-interjections:
+```{r}
+average_samples_regions <- samples %>%
+  group_by(EMOTION, REGION, Sample, SET) %>%
+  summarize_at(vars(matches("Freq")), mean) %>%
+  ungroup()
+```
+
+We shift the format of the tables from wider to longer tables for easier graphical display:
+```{r}
+reformat <- function(df) {
+  
+  df_new <- df %>%
+    pivot_longer(cols = matches("Freq"), names_to = "Vowel") %>%
+    mutate(Vowel = substr(Vowel, nchar("Freq")+2, 100)) %>%
+    rename(Freq = value)
+  
+  return (df_new)
+}
+
+frequencies_samples <- average_samples %>% reformat()
+frequencies_samples_regions <- average_samples_regions %>% reformat()
+```
+
+## Ratio of vowels in interjections and non-interjections for different emotions
+
+We can compute for each lexical form (interjections and non-interjections) the ratio of vowels, then compute the average value for each sample, before drawing the distribution of sample values:
+```{r}
+samples_pain %>%
+  mutate(nb_vowels_intj = str_count(Form_intj, "[aieE3ou]"),
+         ratio_v_intj = nb_vowels_intj / SegmentCount,
+         nb_vowels_lexicon = str_count(Form_lexicon, "[aieE3ou]"),
+         ratio_v_lexicon = nb_vowels_lexicon / SegmentCount) %>%
+  dplyr::select(Form_intj, ratio_v_intj, Form_lexicon, ratio_v_lexicon, GLOTTOCODE, Sample) %>%
+  pivot_longer(cols = c(ratio_v_intj, ratio_v_lexicon), names_to = "SET", values_to = "ratio_v") %>%
+  mutate(SET = as.factor(SET),
+         SET = fct_recode(SET, "Intj" = "ratio_v_intj", "Lexicon" = "ratio_v_lexicon")) %>%
+  group_by(SET, GLOTTOCODE) %>%
+  summarize(ratio_v = mean(ratio_v)) %>%
+  ungroup() %>%
+  ggplot(aes(x = ratio_v, y = ..density.., fill = SET)) +
+  geom_histogram(position = "identity", color = "black", alpha = 0.4) +
+  geom_density(alpha = 0.4) +
+  scale_fill_manual(values = c(Intj = unname(emotion_colors["PAIN"]), Lexicon = "grey")) +
+  ggtitle("Pain - Histogram of the ratio of vowels for interjections and Lexicon")
+```
+
+```{r}
+samples_disgust %>%
+  mutate(nb_vowels_intj = str_count(Form_intj, "[aieE3ou]"),
+         ratio_v_intj = nb_vowels_intj / SegmentCount,
+         nb_vowels_lexicon = str_count(Form_lexicon, "[aieE3ou]"),
+         ratio_v_lexicon = nb_vowels_lexicon / SegmentCount) %>%
+  dplyr::select(Form_intj, ratio_v_intj, Form_lexicon, ratio_v_lexicon, GLOTTOCODE, Sample) %>%
+  pivot_longer(cols = c(ratio_v_intj, ratio_v_lexicon), names_to = "SET", values_to = "ratio_v") %>%
+  mutate(SET = as.factor(SET),
+       SET = fct_recode(SET, "Intj" = "ratio_v_intj", "Lexicon" = "ratio_v_lexicon")) %>%
+  group_by(SET, GLOTTOCODE) %>%
+  summarize(ratio_v = mean(ratio_v)) %>%
+  ungroup() %>%
+  ggplot(aes(x = ratio_v, y = ..density.., fill = SET)) +
+  geom_histogram(position = "identity", color = "black", alpha = 0.4) +
+  geom_density(alpha = 0.4) +
+  scale_fill_manual(values = c(Intj = unname(emotion_colors["DISGUST"]), Lexicon = "grey")) +
+  ggtitle("Disgust - Histogram of the ratio of vowels for interjections and Lexicon")
+```
+
+```{r}
+samples_joy %>%
+  mutate(nb_vowels_intj = str_count(Form_intj, "[aieE3ou]"),
+         ratio_v_intj = nb_vowels_intj / SegmentCount,
+         nb_vowels_lexicon = str_count(Form_lexicon, "[aieE3ou]"),
+         ratio_v_lexicon = nb_vowels_lexicon / SegmentCount) %>%
+  dplyr::select(Form_intj, ratio_v_intj, Form_lexicon, ratio_v_lexicon, GLOTTOCODE, Sample) %>%
+  pivot_longer(cols = c(ratio_v_intj, ratio_v_lexicon), names_to = "SET", values_to = "ratio_v") %>%
+  mutate(SET = as.factor(SET),
+         SET = fct_recode(SET, "Intj" = "ratio_v_intj", "Lexicon" = "ratio_v_lexicon")) %>%
+  group_by(SET, GLOTTOCODE) %>%
+  summarize(ratio_v = mean(ratio_v)) %>%
+  ungroup() %>%
+  ggplot(aes(x = ratio_v, y = ..density.., fill = SET)) +
+  geom_histogram(position = "identity", color = "black", alpha = 0.4) +
+  geom_density(alpha = 0.4) +
+  scale_fill_manual(values = c(Intj = unname(emotion_colors["JOY"]), Lexicon = "grey")) +
+  ggtitle("Joy - Histogram of the ratio of vowels for interjections and Lexicon")
+```
+
+A tendency appears for interjections to have higher vocalic ratios on average than non-interjections, for pain and joy. The situation is unclear for disgust. 
+
+## Frequencies of target vowels in interjections and non-interjections for different emotions
+
+We first define a function to plot the different histograms:
+```{r}
+get_figure <- function(emotion, samples, color_intj, by_region = F) {
+
+  color_intj <- unname(color_intj)
+
+  tmp <- samples %>%
+    filter(EMOTION == emotion) %>%
+    mutate(Vowel = fct_relevel(Vowel, "a", "e", "3", "i", "o", "u", "wfd"))
+
+  if (by_region)
+    tmp <- tmp %>%
+      mutate(REGION = fct_relevel(REGION, "Africa", "Asia", "Europe", "Latin America", "Australia"))
+
+  if (by_region)
+    tmp2 <- tmp %>%
+      group_by(REGION, SET, Vowel) %>%
+      summarize(grp.mean = mean(Freq)) %>%
+      ungroup()
+  else
+    tmp2 <- tmp %>%
+      group_by(SET, Vowel) %>%
+      summarize(grp.mean = mean(Freq)) %>%
+      ungroup()
+  
+  p <- tmp %>%
+    ggplot(aes(x = Freq, y = ..density.., fill = SET))
+  
+  if (by_region)
+    p <- p + geom_histogram(position = "identity", color = "black", bins = 20, alpha = 0.2)
+  else
+    p <- p + geom_histogram(position = "identity", color = "black", alpha = 0.2)
+
+  p <- p + 
+    geom_density(alpha = 0.2) +
+    scale_fill_manual(values = c(Intj = color_intj, Lexicon = "grey")) +
+    geom_vline(data = tmp2, aes(xintercept = grp.mean, color = SET), linetype = "dashed") +
+    scale_color_manual(values = c(Intj = color_intj, Lexicon = "darkgrey")) +
+    labs(x = "Frequency", y = "") +
+    theme(text = element_text(family=target_font),
+        axis.text.x = element_text(size = 5),
+        axis.text.y = element_text(size = 6),
+        plot.title = element_text(size = 8, margin = margin(b = 8), face = "bold"),
+        legend.text = element_text(size = 5),
+        legend.title = element_text(size = 6),
+        axis.title.x = element_text(size = 8, margin = margin(t = 10), face = "bold"),
+        axis.title.y = element_text(size = 7, margin = margin(r = 10), face = "bold"),
+        strip.text.x = element_text(size = 7),
+        strip.text.y = element_text(size = 6))
+  
+  
+  if (by_region) {
+    p <- p + ggtitle(paste0("Distribution of frequency values for different vowels and regions - ", emotion, " - ", params$corpus))
+    ncol_region <- tmp %>% pull(REGION) %>% unique() %>% length()
+    p <- p + facet_wrap(Vowel ~ REGION, ncol = ncol_region, scales = "free")
+  } else {
+    p <- p + ggtitle(paste0("Distribution of frequency values for different vowels - ", emotion, " - ", params$corpus))
+    p <- p + facet_wrap(. ~ Vowel, ncol = 3, scales = "free_y")
+  }
+
+  return (p)
+}
+```
+
+### Across languages for different regions
+
+For pain:
+```{r fig.height = 12}
+get_figure("PAIN", frequencies_samples_regions, emotion_colors["PAIN"], by_region = T)
+```
+
+For disgust:
+```{r fig.height = 10}
+get_figure("DISGUST", frequencies_samples_regions, emotion_colors["DISGUST"], by_region = T)
+```
+
+For joy:
+```{r fig.height = 10}
+get_figure("JOY", frequencies_samples_regions, emotion_colors["JOY"], by_region = T)
+```
+
+### Across all languages
+
+For pain:
+```{r fig.width = 8}
+get_figure("PAIN", frequencies_samples, emotion_colors["PAIN"], by_region = F)
+```
+
+For disgust:
+```{r fig.width = 8}
+get_figure("DISGUST", frequencies_samples, emotion_colors["DISGUST"], by_region = F)
+```
+
+For joy:
+```{r fig.width = 8}
+get_figure("JOY", frequencies_samples, emotion_colors["JOY"], by_region = F)
+```
+
+## Computing empirical *p*-values and effect sizes
+
+As previously with phonological distances between interjections and between non-interjections, we can rely on permutation tests to assess whether the differences between interjections and non-interjections in terms of frequency of occurrence of vowels, displayed above, are significant or not.
+
+### Computations
+
+```{r}
+nb_samples <- 1000
+```
+
+We define the same function to create samples as for when computing empirical *p*-values for distances between interjections and between non-interjections:
+```{r}
+create_sample <- function(sample_id, keep_ratio, emotion) {
+
+  df_sample <- df %>% filter(EMOTION == emotion)
+
+  # We get one language per family
+  df_one_lg <- df_sample %>%
+    dplyr::select(GLOTTOCODE, FAMILY) %>%
+    group_by(FAMILY) %>%
+    slice_sample(n = 1) %>%
+    ungroup()
+  
+  # We only keep a proportion of the languages/families
+  df_selected_lg <- df_one_lg %>% slice_sample(prop = keep_ratio)
+
+  df_sample <- df_sample %>% right_join(df_selected_lg, by = join_by(GLOTTOCODE, FAMILY))
+
+  # We now select one interjection per selected language
+  df_one_interj <- df_sample %>%
+    dplyr::select(Form_intj, Form_IPA_intj, GLOTTOCODE) %>%
+    group_by(GLOTTOCODE) %>%
+    slice_sample(n = 1) %>%
+    ungroup()
+  
+  df_sample <- df_sample %>% right_join(df_one_interj, by = join_by(Form_intj, Form_IPA_intj, GLOTTOCODE))
+  
+  # For each interjection, we randomly select one corresponding non-interjection
+  df_sample <- df_sample %>%
+    group_by(Form_intj, Form_IPA_intj, SegmentCount, GLOTTOCODE, AUTOTYP_AREA, FAMILY, REGION, EMOTION) %>%
+    slice_sample(n = 1) %>%
+    ungroup() %>%
+    mutate(Sample = sample_id)
+  
+return (df_sample)
+}
+```
+
+We define the same function to randomly permute pairs of interjection and non-interjection in a sample as for when computing empirical *p*-values for distances between interjections and between non-interjections:
+```{r}
+shuffle_sample <- function(df_sample) {
+  df_sample <- df_sample %>%
+    mutate(x = runif(nrow(.))) %>%
+    mutate(Form_intj = as.character(Form_intj),
+           Form_lexicon = as.character(Form_lexicon),
+           new_Form_intj = if_else(x > 0.5, Form_intj, Form_lexicon),
+           new_Form_lexicon =  if_else(x > 0.5, Form_lexicon, Form_intj),
+           Form_intj = new_Form_intj,
+           Form_lexicon = new_Form_lexicon) %>%
+    dplyr::select(-new_Form_intj, -new_Form_lexicon) %>%
+    mutate(Form_IPA_intj = as.character(Form_IPA_intj), # We repeat the same approach with IPA forms
+           Form_IPA_lexicon = as.character(Form_IPA_lexicon),
+           new_Form_IPA_intj = if_else(x > 0.5, Form_IPA_intj, Form_IPA_lexicon),
+           new_Form_IPA_lexicon =  if_else(x > 0.5, Form_IPA_lexicon, Form_IPA_intj),
+           Form_IPA_intj = new_Form_IPA_intj,
+           Form_IPA_lexicon = new_Form_IPA_lexicon) %>%
+    dplyr::select(-new_Form_IPA_intj, -new_Form_IPA_lexicon) %>%
+    dplyr::select(-x)
+
+  return (df_sample)
+}
+```
+
+
+We define how many test statistics we want in our distribution:
+```{r}
+nb_samples_permutation_test <- 1000
+```
+
+We define a function which returns several *t* statistics for the difference in average values of two distributions for interjections and non-interjections. The function takes a data table describing the content of samples, and returns 
+```{r}
+get_ts_from_samples <- function(samples) {
+  
+  freq <- samples %>%
+    pivot_longer(Freq_a:Freq_wfd, names_to = "Vowel", values_to = "Freq") %>%
+    pivot_wider(names_from = "SET", values_from = "Freq")
+  
+  ts_world <- freq %>%
+    group_by(Vowel, Sample, EMOTION) %>%
+    summarize_at(c("Intj", "Lexicon"), mean) %>%
+    ungroup() %>%
+    group_by(Vowel, EMOTION) %>%
+    summarize(t = t.test(Intj, Lexicon, paired = T)$statistic) %>%
+    ungroup() %>%
+    mutate(REGION = "World")
+
+  ts_regions <- freq %>%
+    group_by(Vowel, Sample, REGION, EMOTION) %>%
+    summarize_at(c("Intj", "Lexicon"), mean) %>%
+    ungroup() %>%
+    group_by(Vowel, REGION, EMOTION) %>%
+    summarize(t = t.test(Intj, Lexicon, paired = T)$statistic) %>%
+    ungroup()
+  
+  ts <- rbind(ts_world, ts_regions) %>%
+    mutate(Vowel = substr(Vowel, nchar("Freq")+2, 100))
+
+  return (ts)
+}
+```
+
+We finally define a function to get the *t* test statistic for nb_samples of pairs of interjections and non-interjections with random permutations:
+```{r}
+generate_ts_from_random_samples <- function(iteration, nb_samples, keep_ratio) {
+
+  samples_pain <- lapply(1:nb_samples, create_sample, keep_ratio, "PAIN")
+  samples_pain <- lapply(samples_pain, shuffle_sample)
+  samples_pain <- do.call("rbind", samples_pain)
+  
+  samples_disgust <- lapply(1:nb_samples, create_sample, keep_ratio, "DISGUST")
+  samples_disgust <- lapply(samples_disgust, shuffle_sample)
+  samples_disgust <- do.call("rbind", samples_disgust)
+  
+  samples_joy <- lapply(1:nb_samples, create_sample, keep_ratio, "JOY")
+  samples_joy <- lapply(samples_joy, shuffle_sample)
+  samples_joy <- do.call("rbind", samples_joy)
+  
+  samples <- rbind(samples_pain, samples_disgust, samples_joy) %>%
+    dplyr::select(-AUTOTYP_AREA, -FAMILY, -SegmentCount) %>%
+    mutate_at(c("GLOTTOCODE", "REGION", "Sample", "EMOTION"), as.factor)
+
+  samples_intj <- samples %>%
+    select(-Form_lexicon, -Form_IPA_lexicon) %>%
+    rename(Form = Form_intj, Form_IPA = Form_IPA_intj) %>% 
+    add_content_data(vowels, target_frequency, prefix = "Freq_") %>%
+    mutate(SET = "Intj") %>%
+    dplyr::select(-Form, -Form_IPA)
+
+  samples_lexicon <- samples %>%
+    select(-Form_intj, -Form_IPA_intj) %>%
+    rename(Form = Form_lexicon, Form_IPA = Form_IPA_lexicon) %>%
+    add_content_data(vowels, target_frequency, prefix = "Freq_") %>%
+    mutate(SET = "Lexicon") %>%
+    dplyr::select(-Form, -Form_IPA)
+  
+  samples <- rbind(samples_intj, samples_lexicon) %>%
+    mutate(SET = as.factor(SET))
+  
+  ts <- get_ts_from_samples(samples)
+  
+  return (ts)  
+}
+```
+
+We call the *get_test_statistics()* function *nb_samples_permutation_test* times for each emotion. We parallelize the process to save time:
+```{r eval = !params$precomputed}
+parallelStartSocket(n_cores, load.balancing = T)
+parallelLibrary("dplyr", "stringr", "tidyr")
+parallelExport(objnames = c("df", "create_sample", "shuffle_sample", 
+                            "nb_samples", "get_ts_from_samples", "add_content_data",
+                            "create_tibble_occurrence", "create_tibble_vocalic_frequency",
+                            "create_tibble_count", "create_tibble_frequency",
+                            "target_frequency", "vowels", "add_column"))
+
+ts_emotions <- parallelMap(generate_ts_from_random_samples, iteration = as.list(1:nb_samples_permutation_test), more.args = list(nb_samples = nb_samples, keep_ratio = 0.75))
+parallelStop()
+```
+
+```{r echo = F, eval = !params$precomputed}
+filename <- paste0("computations_frequencies_", params$corpus, "_segments.RData")
+save(ts_emotions, file = filename)
+```
+
+```{r echo = F, eval = params$precomputed}
+filename <- paste0("computations_frequencies_", params$corpus, "_segments.RData")
+load(file = filename)
+```
+
+We turn the list of data tables for the permutation tests into a unique data table:
+```{r}
+ts_emotions <- do.call("rbind", ts_emotions)
+```
+
+Note: Because we randomly drop language families / languages when building a random sample, it can happen in some rare cases that a region is not longer represented in a sample. Instead of having *nb_samples* defining the two (randomly shuffled) distributions for a permutation sample, we may thus have a bit less. This does not cause any problem, though, to compute the *t* test statistic, since interjections and non-interjections are paired, and the impact of a few missing samples is marginal.
+
+We merge the data tables for our permutation tests and our target distributions in order to compute the *p*-values
+```{r}
+target_ts <- get_ts_from_samples(samples) %>%
+  rename(target_t = t)
+
+ts_emotions <- ts_emotions %>% inner_join(target_ts)
+
+results <- ts_emotions %>%
+  mutate(test = if_else(target_t < 0, t < target_t, t > target_t),
+         test = as.numeric(test)) %>%
+  group_by(Vowel, EMOTION, REGION) %>%
+  summarize(p = sum(test) / nb_samples_permutation_test) %>%
+  ungroup()
+```
+
+We compute the distance between the average values of the distribution and the corresponding effect size for our different vowels, emotions and regions (including all languages). We then prepare a single table table of results with *p* values, distances and effect sizes.
+```{r}
+dist_eff_size <- samples %>%
+    pivot_longer(Freq_a:Freq_wfd, names_to = "Vowel", values_to = "Freq") %>%
+    pivot_wider(names_from = "SET", values_from = "Freq") %>%
+    group_by(Vowel, Sample, EMOTION) %>%
+    summarize_at(c("Intj", "Lexicon"), mean) %>%
+    ungroup() %>%
+    group_by(Vowel, EMOTION) %>%
+    summarize(distance = mean(Intj) - mean(Lexicon),
+              D = cohen.d(Intj, Lexicon, paired = T)$estimate) %>%
+    ungroup() %>%
+    mutate(REGION = "World", 
+           Vowel = substr(Vowel, nchar("Freq") + 2, 100))
+
+
+dist_eff_size_regions <- samples %>%
+    pivot_longer(Freq_a:Freq_wfd, names_to = "Vowel", values_to = "Freq") %>%
+    pivot_wider(names_from = "SET", values_from = "Freq") %>%
+    group_by(Vowel, Sample, EMOTION, REGION) %>%
+    summarize_at(c("Intj", "Lexicon"), mean) %>%
+    ungroup() %>%
+    group_by(Vowel, EMOTION, REGION) %>%
+    summarize(distance = mean(Intj) - mean(Lexicon),
+              D = cohen.d(Intj, Lexicon, paired = T)$estimate) %>%
+    ungroup() %>%
+    mutate(Vowel = substr(Vowel, nchar("Freq") + 2, 100))
+
+dist_eff_size <- rbind(dist_eff_size, dist_eff_size_regions)
+
+results <- results %>%
+  inner_join(dist_eff_size) %>%
+  mutate(Vowel = as.factor(Vowel),
+         Vowel = fct_relevel(Vowel, "a", "e", "3", "i", "o", "u", "wfd"),
+         REGION = fct_relevel(REGION, "Africa", "Asia", "Europe", "Latin America", "Australia"))
+```
+
+Note: We apply a specific version of Cohen's d test for paired observations. It does not require homoscedasticity since what is assessed is a single distribution of the differences between the elements of the pairs. It requires, however, normality of the distribution of differences. For some configurations of emotion and region, this condition is not well met and the effect size might be approximate, but we chose this approach given we feel confident this is a good-enough first approach given the exploratory nature of our study.
+
+### Adjusting for multiple tests?
+
+As previously with our *p*-value for distances between interjections and between non-interjections, we have multiple tests, and we may consider adjusting the *p*-values to prevent an inflation of the Type-I error rate (false positives). However, while we only had 3 tests earlier, we have more than a hundred now, with the different vowels and regions. The risk with adjustment is that, as the Type-I error rate decreases, the Type-II error rate increases, and one might miss potentially interesting results (false negatives).
+
+Whether the previous adjustment is necessary for studies that are partly hypothesis-driven and partly exploratory, like our own, is still debated but often ruled out (Feise, 2002; Rubin, 2017; Rubin, 2021), with many researchers arguing that Type-II errors are detrimental in exploratory analyses. Here our hypotheses only concern the frequency of open vowels and diphthongs and the tests performed on the other vowels are exploratory. Therefore, we report unadjusted *p*-values and use them only as a means to detect potential effects.
+
+Importantly, the final presentation of the results and their discussion is based on a very conservative approach because: i) only effects present in both the ASJP and Lexibank analyses are considered and ii) only when the effect sizes (estimated as Cohen's d) can be interpreted as medium or large effects (absolute values >=0.5).
+
+References:
+
+* Feise, R. J. (2002). Do multiple outcome measures require p-value adjustment?. BMC medical research methodology, 2, 1-4.
+* Rubin, M. (2017). Do p values lose their meaning in exploratory analyses? It depends how you define the familywise error rate. Review of General Psychology, 21(3), 269-275.
+* Rubin, M. (2021). When to adjust alpha during multiple testing: A consideration of disjunction, conjunction, and individual testing. 
+Synthese, 199(3), 10969-11000.
+
+### Results across all languages
+
+For pain:
+
+```{r}
+results %>%
+  filter(EMOTION == "PAIN", REGION == "World") %>%
+  dplyr::select(-REGION, -EMOTION) %>%
+  mutate(p = format.pval(p, digits = 3, eps = 1 / nb_samples_permutation_test),
+         distance = round(distance, 3),
+         D = round(D, 3)) %>%
+  rename(RawDiff = distance,
+         EffSize = D) %>%
+  arrange(Vowel) %>%
+  kable(align = 'lrrr') %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+For disgust:
+```{r}
+results %>%
+  filter(EMOTION == "DISGUST", REGION == "World") %>%
+  dplyr::select(-REGION, -EMOTION) %>%
+  mutate(p = format.pval(p, digits = 3, eps = 1 / nb_samples_permutation_test),
+         distance = round(distance, 3),
+         D = round(D, 3)) %>%
+  rename(RawDiff = distance,
+         EffSize = D) %>%
+  arrange(Vowel) %>%
+  kable(align = 'lrrr') %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+For joy:
+```{r}
+results %>%
+  filter(EMOTION == "JOY", REGION == "World") %>%
+  dplyr::select(-REGION, -EMOTION) %>%
+  mutate(p = format.pval(p, digits = 3, eps = 1 / nb_samples_permutation_test),
+         distance = round(distance, 3),
+         D = round(D, 3)) %>%
+  rename(RawDiff = distance,
+         EffSize = D) %>%
+  arrange(Vowel) %>%
+  kable(align = 'lrrr') %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+### Results across languages in the different regions
+
+#### Africa
+
+For pain:
+```{r}
+results %>%
+  filter(EMOTION == "PAIN", REGION == "Africa") %>%
+  dplyr::select(-REGION, -EMOTION) %>%
+  mutate(p = format.pval(p, digits = 3, eps = 1 / nb_samples_permutation_test),
+         distance = round(distance, 3),
+         D = round(D, 3)) %>%
+  rename(RawDiff = distance,
+         EffSize = D) %>%
+  arrange(Vowel) %>%
+  kable(align = 'lrrr') %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+For disgust:
+```{r}
+results %>%
+  filter(EMOTION == "DISGUST", REGION == "Africa") %>%
+  dplyr::select(-REGION, -EMOTION) %>%
+  mutate(p = format.pval(p, digits = 3, eps = 1 / nb_samples_permutation_test),
+         distance = round(distance, 3),
+         D = round(D, 3)) %>%
+  rename(RawDiff = distance,
+         EffSize = D) %>%
+  arrange(Vowel) %>%
+  kable(align = 'lrrr') %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+For joy:
+```{r}
+results %>%
+  filter(EMOTION == "JOY", REGION == "Africa") %>%
+  dplyr::select(-REGION, -EMOTION) %>%
+  mutate(p = format.pval(p, digits = 3, eps = 1 / nb_samples_permutation_test),
+         distance = round(distance, 3),
+         D = round(D, 3)) %>%
+  rename(RawDiff = distance,
+         EffSize = D) %>%
+  arrange(Vowel) %>%
+  kable(align = 'lrrr') %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+#### Asia
+
+For pain:
+```{r}
+results %>%
+  filter(EMOTION == "PAIN", REGION == "Asia") %>%
+  dplyr::select(-REGION, -EMOTION) %>%
+  mutate(p = format.pval(p, digits = 3, eps = 1 / nb_samples_permutation_test),
+         distance = round(distance, 3),
+         D = round(D, 3)) %>%
+  rename(RawDiff = distance,
+         EffSize = D) %>%
+  arrange(Vowel) %>%
+  kable(align = 'lrrr') %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+For disgust:
+```{r}
+results %>%
+  filter(EMOTION == "DISGUST", REGION == "Asia") %>%
+  dplyr::select(-REGION, -EMOTION) %>%
+  mutate(p = format.pval(p, digits = 3, eps = 1 / nb_samples_permutation_test),
+         distance = round(distance, 3),
+         D = round(D, 3)) %>%
+  rename(RawDiff = distance,
+         EffSize = D) %>%
+  arrange(Vowel) %>%
+  kable(align = 'lrrr') %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+For joy:
+```{r}
+results %>%
+  filter(EMOTION == "JOY", REGION == "Asia") %>%
+  dplyr::select(-REGION, -EMOTION) %>%
+  mutate(p = format.pval(p, digits = 3, eps = 1 / nb_samples_permutation_test),
+         distance = round(distance, 3),
+         D = round(D, 3)) %>%
+  rename(RawDiff = distance,
+         EffSize = D) %>%
+  arrange(Vowel) %>%
+  kable(align = 'lrrr') %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+#### Europe
+
+For pain:
+```{r}
+results %>%
+  filter(EMOTION == "PAIN", REGION == "Europe") %>%
+  dplyr::select(-REGION, -EMOTION) %>%
+  mutate(p = format.pval(p, digits = 3, eps = 1 / nb_samples_permutation_test),
+         distance = round(distance, 3),
+         D = round(D, 3)) %>%
+  rename(RawDiff = distance,
+         EffSize = D) %>%
+  arrange(Vowel) %>%
+  kable(align = 'lrrr') %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+For disgust:
+```{r}
+results %>%
+  filter(EMOTION == "DISGUST", REGION == "Europe") %>%
+  dplyr::select(-REGION, -EMOTION) %>%
+  mutate(p = format.pval(p, digits = 3, eps = 1 / nb_samples_permutation_test),
+         distance = round(distance, 3),
+         D = round(D, 3)) %>%
+  rename(RawDiff = distance,
+         EffSize = D) %>%
+  arrange(Vowel) %>%
+  kable(align = 'lrrr') %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+For joy:
+```{r}
+results %>%
+  filter(EMOTION == "JOY", REGION == "Europe") %>%
+  dplyr::select(-REGION, -EMOTION) %>%
+  mutate(p = format.pval(p, digits = 3, eps = 1 / nb_samples_permutation_test),
+         distance = round(distance, 3),
+         D = round(D, 3)) %>%
+  rename(RawDiff = distance,
+         EffSize = D) %>%
+  arrange(Vowel) %>%
+  kable(align = 'lrrr') %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+#### Latin America
+
+For pain:
+```{r}
+results %>%
+  filter(EMOTION == "PAIN", REGION == "Latin America") %>%
+  dplyr::select(-REGION, -EMOTION) %>%
+  mutate(p = format.pval(p, digits = 3, eps = 1 / nb_samples_permutation_test),
+         distance = round(distance, 3),
+         D = round(D, 3)) %>%
+  rename(RawDiff = distance,
+         EffSize = D) %>%
+  arrange(Vowel) %>%
+  kable(align = 'lrrr') %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+For disgust:
+```{r}
+results %>%
+  filter(EMOTION == "DISGUST", REGION == "Latin America") %>%
+  dplyr::select(-REGION, -EMOTION) %>%
+  mutate(p = format.pval(p, digits = 3, eps = 1 / nb_samples_permutation_test),
+         distance = round(distance, 3),
+         D = round(D, 3)) %>%
+  rename(RawDiff = distance,
+         EffSize = D) %>%
+  arrange(Vowel) %>%
+  kable(align = 'lrrr') %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+For joy:
+```{r}
+results %>%
+  filter(EMOTION == "JOY", REGION == "Latin America") %>%
+  dplyr::select(-REGION, -EMOTION) %>%
+  mutate(p = format.pval(p, digits = 3, eps = 1 / nb_samples_permutation_test),
+         distance = round(distance, 3),
+         D = round(D, 3)) %>%
+  rename(RawDiff = distance,
+         EffSize = D) %>%
+  arrange(Vowel) %>%
+  kable(align = 'lrrr') %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+#### Australia
+
+For pain:
+```{r}
+results %>%
+  filter(EMOTION == "PAIN", REGION == "Australia") %>%
+  dplyr::select(-REGION, -EMOTION) %>%
+  mutate(p = format.pval(p, digits = 3, eps = 1 / nb_samples_permutation_test),
+         distance = round(distance, 3),
+         D = round(D, 3)) %>%
+  rename(RawDiff = distance,
+         EffSize = D) %>%
+  arrange(Vowel) %>%
+  kable(align = 'lrrr') %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+For disgust:
+```{r}
+results %>%
+  filter(EMOTION == "DISGUST", REGION == "Australia") %>%
+  dplyr::select(-REGION, -EMOTION) %>%
+  mutate(p = format.pval(p, digits = 3, eps = 1 / nb_samples_permutation_test),
+         distance = round(distance, 3),
+         D = round(D, 3)) %>%
+  rename(RawDiff = distance,
+         EffSize = D) %>%
+  arrange(Vowel) %>%
+  kable(align = 'lrrr') %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+For joy:
+```{r}
+results %>%
+  filter(EMOTION == "JOY", REGION == "Australia") %>%
+  dplyr::select(-REGION, -EMOTION) %>%
+  mutate(p = format.pval(p, digits = 3, eps = 1 / nb_samples_permutation_test),
+         distance = round(distance, 3),
+         D = round(D, 3)) %>%
+  rename(RawDiff = distance,
+         EffSize = D) %>%
+  arrange(Vowel) %>%
+  kable(align = 'lrrr') %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+### Displaying the effect size of significant effects with regions as columns
+
+We drop configurations for which the *p*-value is larger than 0.05, then transform the table to have different columns for the different regions:
+
+```{r}
+filtered_results <- results %>% 
+  filter(p < 0.05) %>%
+  dplyr::select(-distance, -p) %>%
+  mutate(D = round(D, 3)) %>%
+  pivot_wider(names_from = REGION, values_from = D) %>%
+  dplyr::select(EMOTION, Vowel, Africa, Asia, Europe, `Latin America`, Australia, World)
+```
+
+Table for pain:
+```{r}
+filtered_results %>%
+  filter(EMOTION == "PAIN") %>%
+  arrange(Vowel) %>%
+  kable(align = 'llrrrrrr') %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+Table for disgust:
+```{r}
+filtered_results %>%
+  filter(EMOTION == "DISGUST") %>%
+  arrange(Vowel) %>%
+  kable(align = 'llrrrrrr') %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+Table for joy:
+```{r}
+filtered_results %>%
+  filter(EMOTION == "JOY") %>%
+  arrange(Vowel) %>%
+  kable(align = 'llrrrrrr') %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+### Displaying the effect size of significant effects with medium to large effect size, with regions as columns
+
+We drop configurations for which the *p*-value is larger than 0.05 and the absolute value of Cohen's D is smaller than 0.5, then transform the table to have different columns for the different regions:
+
+```{r}
+filtered_results <- results %>% 
+  filter(p < 0.05 & abs(D) > 0.5) %>%
+  dplyr::select(-distance, -p) %>%
+  mutate(D = round(D, 3)) %>%
+  pivot_wider(names_from = REGION, values_from = D) %>%
+  dplyr::select(EMOTION, Vowel, Africa, Asia, Europe, `Latin America`, Australia, World)
+```
+
+Table for pain:
+```{r}
+filtered_results %>%
+  filter(EMOTION == "PAIN") %>%
+  arrange(Vowel) %>%
+  kable(align = 'llrrrrrr') %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+Table for disgust:
+```{r}
+filtered_results %>%
+  filter(EMOTION == "DISGUST") %>%
+  arrange(Vowel) %>%
+  kable(align = 'llrrrrrr') %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+Table for joy:
+```{r}
+filtered_results %>%
+  filter(EMOTION == "JOY") %>%
+  arrange(Vowel) %>%
+  kable(align = 'llrrrrrr') %>%
+  kable_classic() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
