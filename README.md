@@ -3,15 +3,14 @@
 This folder contains supplementary materials for the following publication:
 Maia Ponsonnet, Christophe Coupe, François Pellegrino, Garcia Arasco Aitana, and Katarzyna Pisanski (2024). Vowel signatures in emotional interjections and nonlinguistic vocalizations expressing pain, disgust, and joy across languages. Journal of the Acoustic Society of America. DOI: 10.1121/10.0032454
 
-The 'code' files are as follows:
+# The 'code' files are as follows:
 
-1. Generate_SuppPub5_and_SuppPub6.R: A .R file to call 'Interjections_statistical_analysis.Rmd' to work either with ASJP or Lexibank data
+1. Generate_SuppPub5_and_SuppPub6.R: A .R file to call 'Interjections_statistical_analysis.Rmd' to work either with ASJP or Lexibank data (and generate the corresponding .html files - included in the supplementary materials of the paper)
 2. Interjections_statistical_analysis.Rmd: The .Rmd file with the analyses of the interjections (with a parameter to work either with ASJP or Lexibank as the source for non-interjections)
 3. Vocalizations_statistical_analysis.Rmd: The .Rmd file with the analyses of the vocalizations
 
 
-
-The 'data' files contain the following information:
+# The 'data' files contain the following information:
 
 1. dataset(final).ASJP.intj.csv --> Data on collected interjections, with in the columns from left to right and for each interjection:
    - World region where the language is spoken (REGION)
@@ -76,7 +75,7 @@ The 'data' files contain the following information:
    - Speaker's primary language (lang)
    - Speaker's gender (M for Man; F for Woman; NB for Non-binary) (Sex)
 
-These files can be used as input for the various pieces of code provided in Supplementary Materials.
+Reference: Goddard, C. (2014). Interjections and emotion (with special reference to “surprise” and “disgust”). Emotion review, 6(1), 53-63.
 
-Reference
-Goddard, C. (2014). Interjections and emotion (with special reference to “surprise” and “disgust”). Emotion review, 6(1), 53-63.
+These files are used as input for the various pieces of code (see above).
+
